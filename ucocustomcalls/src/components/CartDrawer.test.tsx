@@ -11,7 +11,13 @@ const product: Product = {
 
 function Setup({ open = true }: { open?: boolean }) {
   const { add } = useCart();
-  React.useEffect(() => { add(product); }, [add]);
+  const addedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!addedRef.current) {
+      add(product);
+      addedRef.current = true;
+    }
+  }, [add]);
   return <CartDrawer open={open} onClose={() => {}} />;
 }
 
@@ -28,7 +34,8 @@ describe('CartDrawer', () => {
     render(<Wrapper />);
     expect(await screen.findByText('Drawer Item')).toBeInTheDocument();
     expect(screen.getByText(/Subtotal/i)).toBeInTheDocument();
-    expect(screen.getByText('$15.00')).toBeInTheDocument();
+  const prices = screen.getAllByText('$15.00');
+  expect(prices.length).toBeGreaterThanOrEqual(2); // line item + subtotal
   });
 
   it('removes item when Remove clicked', async () => {
