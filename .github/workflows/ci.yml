@@ -38,6 +38,10 @@ jobs:
         working-directory: ucocustomcalls
         run: npm run test:ci
 
+      - name: Security Audit (high severity)
+        working-directory: ucocustomcalls
+        run: npm run audit:high || echo "High severity vulnerabilities found" && exit 1
+
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
