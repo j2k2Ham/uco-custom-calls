@@ -1,27 +1,11 @@
 import { render } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { vi } from 'vitest';
 import { Hero } from '@/components/Hero';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartProvider } from '@/hooks/useCart';
 
-// Mock next/link to avoid async prefetch side-effects causing act() warnings
-interface MockLinkProps {
-  href: string | { pathname?: string };
-  children: React.ReactNode;
-  [key: string]: unknown;
-}
-
-vi.mock('next/link', () => ({
-  __esModule: true,
-  default: ({ href, children, ...rest }: MockLinkProps) => (
-    <a href={typeof href === 'string' ? href : href?.pathname || '#'} {...rest}>
-      {children}
-    </a>
-  ),
-}));
 
 expect.extend(toHaveNoViolations);
 
