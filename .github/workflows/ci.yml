@@ -65,6 +65,13 @@ jobs:
             git push origin HEAD:main;
           fi
 
+      - name: Prune build & lint caches (local workspace)
+        if: always()
+        run: |
+          echo "Pruning .next and tool caches to keep workspace lean";
+          rm -rf ucocustomcalls/.next || true
+          rm -rf ucocustomcalls/.cache || true
+
   sonar:
     needs: build-test-lint
     runs-on: ubuntu-latest
