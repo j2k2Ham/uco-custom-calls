@@ -15,7 +15,7 @@ type CartContext = {
 };
 const Ctx = createContext<CartContext | null>(null);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -28,20 +28,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const api = useMemo<CartContext>(() => ({
     items,
-    add: (p, qty = 1) => {
-      setItems(prev => {
-        const found = prev.find(i => i.id === p.id);
+    add: (p: Product, qty: number = 1) => {
+      setItems((prev: CartItem[]) => {
+        const found = prev.find((i: CartItem) => i.id === p.id);
         return found
-          ? prev.map(i => i.id === p.id ? { ...i, qty: i.qty + qty } : i)
+          ? prev.map((i: CartItem) => (i.id === p.id ? { ...i, qty: i.qty + qty } : i))
           : [...prev, { id: p.id, title: p.title, price: p.price, qty, slug: p.slug }];
       });
       setOpen(true);
     },
-    remove: id => setItems(prev => prev.filter(i => i.id !== id)),
+    remove: (id: string) => setItems((prev: CartItem[]) => prev.filter((i: CartItem) => i.id !== id)),
     clear: () => setItems([]),
     open, setOpen,
-    count: items.reduce((n, i) => n + i.qty, 0),
-    total: items.reduce((sum, i) => sum + i.price * i.qty, 0)
+    count: items.reduce((n: number, i: CartItem) => n + i.qty, 0),
+    total: items.reduce((sum: number, i: CartItem) => sum + i.price * i.qty, 0)
   }), [items, open]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;

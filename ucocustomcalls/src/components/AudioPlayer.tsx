@@ -5,6 +5,7 @@ export function AudioPlayer({ src, label }: { src: string; label: string }) {
       <div className="text-sm mb-1">{label}</div>
       <audio controls preload="none" className="w-full">
         <source src={src} type="audio/mpeg" />
+        <track kind="captions" src="/captions/blank.vtt" label="English" />
         Your browser does not support the audio element.
       </audio>
     </div>
