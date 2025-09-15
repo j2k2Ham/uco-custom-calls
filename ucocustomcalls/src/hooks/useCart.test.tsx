@@ -99,4 +99,16 @@ describe('useCart', () => {
     });
     expect(result.current.open).toBe(true);
   });
+
+  it('hydrates from existing localStorage data', () => {
+    // Seed storage before hook mounts
+    const seeded = [
+      { id: 'h1', title: 'Hydrated', price: 500, qty: 2, slug: 'h1' }
+    ];
+    localStorage.setItem('uco.cart', JSON.stringify(seeded));
+    const { result } = renderHook(() => useCart(), { wrapper });
+    // Effects run after mount; flush microtask queue
+    expect(result.current.count).toBe(2);
+    expect(result.current.total).toBe(1000);
+  });
 });

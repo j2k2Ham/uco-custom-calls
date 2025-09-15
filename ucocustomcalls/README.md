@@ -125,7 +125,7 @@ Global styles (`src/app/globals.css`) include `@import "tailwindcss";` and an in
 
 `sonar-project.properties` is scoped so only `src/` under this package is analyzed. Adjust `sonar.sources` or exclusions as needed. Add coverage reporting later by integrating `vitest --coverage` and pointing Sonar to the LCOV file.
 
-### Test Coverage
+### Test Coverage & Performance
 
 Coverage is generated with V8 instrumentation via Vitest.
 
@@ -145,10 +145,55 @@ Sonar integration:
 
 Threshold Strategy:
 
-- Initial low thresholds allowed incremental onboarding of tests.
-- Current enforced minimums (see `vitest.config.ts`): Lines 70%, Statements 70%, Functions 60%, Branches 60%.
-- Recent suite run (date approximate) achieved ~82% lines/statements overall; headroom retained for adding new, still-untested components (`Hero`, `ProductCard`, etc.).
-- Raise again once new components receive coverage and sustained baseline stays >10% above thresholds.
+- Progressive tightening from low initial gates to near-complete coverage.
+- Current enforced minimums (see `vitest.config.ts`): Lines 98%, Statements 98%, Functions 90%, Branches 85%.
+- Suite presently achieves 100% lines/statements and >93% branches overall.
+- Adjust only after sizable feature additions to avoid churn.
+
+Performance Benchmarks:
+
+Light micro-benchmarks (Vitest bench) exist for currency utilities.
+
+Commands:
+
+```bash
+npm run test:bench   # run benchmarks in src/bench
+```
+
+Output provides ops/sec for formatting vs summation workloads. Bench files are excluded from coverage.
+
+Coverage Badge:
+
+After running coverage you can generate/update a static badge:
+
+```bash
+npm run test:coverage
+npm run coverage:badge
+```
+
+Badge output: `public/badges/coverage.svg` (commit it to display via raw GitHub URL or embed in docs).
+
+### Runtime Profiling
+
+Lightweight React profiling can be enabled by setting an environment flag before starting dev or build. When enabled, a console log line prints commit durations for the root subtree.
+
+```bash
+NEXT_PUBLIC_PROFILE=1 npm run dev
+```
+
+Disable by omitting the env var. Profiler output lines are prefixed with `[Profiler]`.
+
+### Accessibility Testing
+
+Basic axe-core smoke tests ensure common components (Header, Hero, Footer) render without obvious violations.
+
+Run:
+
+```bash
+npm test -- src/a11y
+```
+
+Add additional a11y tests under `src/a11y/*.a11y.test.tsx` as UI expands.
 
 ### Continuous Integration (CI)
 

@@ -23,12 +23,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
-      reporter: ['text', 'html', 'lcov'],
+  reporter: ['text', 'html', 'lcov', 'json-summary'],
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.d.ts',
         'src/**/__tests__/**',
         'src/**/*.test.{ts,tsx}',
+        'src/**/*.bench.{ts,tsx}',
         'src/app/**',
         'src/types/**',
         'src/hooks/cart.tsx',
@@ -39,10 +40,10 @@ export default defineConfig({
       thresholds: {
         // Raised after achieving near-100% statements/lines, high branches.
         // Leave minimal headroom for small untested additions.
-        lines: 98,
-        statements: 98,
-        functions: 90,
-        branches: 85
+        lines: 100,
+        statements: 100,
+        functions: 94,
+        branches: 93
       }
     }
   }
