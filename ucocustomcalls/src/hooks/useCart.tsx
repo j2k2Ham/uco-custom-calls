@@ -25,23 +25,37 @@ export function CartProvider({ children }: Readonly<{ children: React.ReactNode 
   }, []);
   useEffect(() => localStorage.setItem("uco.cart", JSON.stringify(items)), [items]);
 
+  function upsertItem(prev: CartItem[], p: Product, qty: number): CartItem[] {
+    const existingIndex = prev.findIndex(i => i.id === p.id);
+    if (existingIndex === -1) {
+      return [...prev, { id: p.id, title: p.title, price: p.price, qty, slug: p.slug }];
+    }
+    const clone = [...prev];
+    const current = clone[existingIndex];
+    clone[existingIndex] = { ...current, qty: current.qty + qty };
+    return clone;
+  }
+
+  function removeItem(prev: CartItem[], id: string): CartItem[] {
+    return prev.filter(i => i.id !== id);
+  }
+
+  const count = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
+  const total = useMemo(() => items.reduce((sum, i) => sum + i.price * i.qty, 0), [items]);
+
   const api = useMemo<CartContext>(() => ({
     items,
     add: (p: Product, qty: number = 1) => {
-      setItems((prev: CartItem[]) => {
-        const found = prev.find((i: CartItem) => i.id === p.id);
-        return found
-          ? prev.map((i: CartItem) => (i.id === p.id ? { ...i, qty: i.qty + qty } : i))
-          : [...prev, { id: p.id, title: p.title, price: p.price, qty, slug: p.slug }];
-      });
+      setItems(prev => upsertItem(prev, p, qty));
       setOpen(true);
     },
-    remove: (id: string) => setItems((prev: CartItem[]) => prev.filter((i: CartItem) => i.id !== id)),
+    remove: (id: string) => setItems(prev => removeItem(prev, id)),
     clear: () => setItems([]),
-    open, setOpen,
-    count: items.reduce((n: number, i: CartItem) => n + i.qty, 0),
-    total: items.reduce((sum: number, i: CartItem) => sum + i.price * i.qty, 0)
-  }), [items, open]);
+    open,
+    setOpen,
+    count,
+    total
+  }), [items, open, count, total]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }

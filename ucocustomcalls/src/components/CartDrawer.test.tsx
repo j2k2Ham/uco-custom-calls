@@ -9,7 +9,7 @@ const product: Product = {
   images: [{ src: '/i.jpg', alt: 'i' }], inStock: true
 };
 
-function Setup({ open = true }: { open?: boolean }) {
+function Setup({ open = true }: Readonly<{ open?: boolean }>) {
   const { add } = useCart();
   const addedRef = React.useRef(false);
   React.useEffect(() => {

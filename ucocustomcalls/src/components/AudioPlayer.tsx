@@ -1,5 +1,5 @@
 "use client";
-export function AudioPlayer({ src, label }: { src: string; label: string }) {
+export function AudioPlayer({ src, label }: Readonly<{ src: string; label: string }>) {
   return (
     <div className="rounded border border-camo-light p-3">
       <div className="text-sm mb-1">{label}</div>
