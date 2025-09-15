@@ -103,6 +103,7 @@ Persistence: Serializes to `localStorage` under the key `cart`. Guarded so it is
 formatUSD(cents: number): string; // Intl.NumberFormat, USD
 sumCents(values: number[]): number; // reduce helper
 ```
+
 `Price` component (`src/components/Price.tsx`) uses `formatUSD` to keep pricing consistent.
 
 ### Tailwind CSS v4 Notes
@@ -113,6 +114,7 @@ Tailwind v4 removes the standalone CLI in favor of the PostCSS plugin. This proj
 import tailwind from '@tailwindcss/postcss';
 export default { plugins: [tailwind()] };
 ```
+
 Global styles (`src/app/globals.css`) include `@import "tailwindcss";` and an inline theme block (`@theme inline { ... }`) that defines semantic tokens (e.g. `--color-bg`).
 
 ### Linting
