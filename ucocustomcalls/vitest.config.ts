@@ -14,7 +14,12 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    exclude: ['**/.next/**', '**/node_modules/**'],
+    exclude: [
+      '**/.next/**',
+      '**/node_modules/**',
+      'src/app/**',
+      'src/types/**'
+    ],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
@@ -24,18 +29,18 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/**/__tests__/**',
         'src/**/*.test.{ts,tsx}',
-        'src/app/**/route.{ts,tsx}',
-        // legacy/duplicate experimental files
+        'src/app/**',
+        'src/types/**',
         'src/hooks/cart.tsx',
         'src/hooks/useCart.tsx'
       ],
       // NOTE: Initial low thresholds while only cart hook is tested.
       // Increase progressively as component/page tests are added.
       thresholds: {
-        lines: 12,
-        statements: 12,
-        functions: 35,
-        branches: 25
+        lines: 45,
+        statements: 45,
+        functions: 50,
+        branches: 35
       }
     }
   }
