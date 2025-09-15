@@ -70,4 +70,33 @@ describe('useCart', () => {
     expect(result.current.count).toBe(0);
     expect(result.current.total).toBe(0);
   });
+
+  it('supports quantity parameter on add', () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    act(() => {
+      result.current.add({
+        id: 'pq', slug: 'pq', title: 'Qty', description: 'Duck call', category: 'duck', price: 1000, images: [{ src: '/iq.jpg', alt: 'iq' }], inStock: true
+      }, 3);
+    });
+    expect(result.current.count).toBe(3);
+    expect(result.current.total).toBe(3000);
+  });
+
+  it('remove non-existent id is a no-op', () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    act(() => {
+      result.current.add({ id: 'p5', slug: 'p5', title: 'P5', description: 'Duck call', category: 'duck', price: 1000, images: [{ src: '/i5.jpg', alt: 'i5' }], inStock: true });
+      result.current.remove('does-not-exist');
+    });
+    expect(result.current.count).toBe(1);
+    expect(result.current.total).toBe(1000);
+  });
+
+  it('sets open flag true after add', () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    act(() => {
+      result.current.add({ id: 'po', slug: 'po', title: 'P Open', description: 'Duck call', category: 'duck', price: 1000, images: [{ src: '/io.jpg', alt: 'io' }], inStock: true });
+    });
+    expect(result.current.open).toBe(true);
+  });
 });

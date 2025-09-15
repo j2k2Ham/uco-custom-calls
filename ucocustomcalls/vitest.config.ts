@@ -37,12 +37,12 @@ export default defineConfig({
       // NOTE: Initial low thresholds while only cart hook is tested.
       // Increase progressively as component/page tests are added.
       thresholds: {
-        // Raised after broader component coverage pass (current ~82%).
-        // Keep conservative headroom for new untested components being added.
-        lines: 70,
-        statements: 70,
-        functions: 60,
-        branches: 60
+        // Raised after achieving near-100% statements/lines, high branches.
+        // Leave minimal headroom for small untested additions.
+        lines: 98,
+        statements: 98,
+        functions: 90,
+        branches: 85
       }
     }
   }
