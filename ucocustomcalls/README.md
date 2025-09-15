@@ -119,6 +119,26 @@ Global styles (`src/app/globals.css`) include `@import "tailwindcss";` and an in
 
 `sonar-project.properties` is scoped so only `src/` under this package is analyzed. Adjust `sonar.sources` or exclusions as needed. Add coverage reporting later by integrating `vitest --coverage` and pointing Sonar to the LCOV file.
 
+### Test Coverage
+
+Coverage is generated with V8 instrumentation via Vitest.
+
+Commands:
+
+```bash
+npm run test:coverage   # produces text + html + lcov
+```
+
+Output:
+
+- HTML report: `coverage/html/index.html`
+- LCOV file: `coverage/lcov.info`
+
+Sonar integration:
+`sonar.javascript.lcov.reportPaths=ucocustomcalls/coverage/lcov.info` (already added).
+
+Thresholds are intentionally low initially (only cart + a few components tested). Increase them gradually as you add broader coverage.
+
 ### Accessibility Enhancements
 
 Audio components include `<track>` elements for captions. A placeholder WebVTT file lives at `public/captions/blank.vtt` and can be replaced with real transcripts.

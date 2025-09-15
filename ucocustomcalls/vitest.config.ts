@@ -32,10 +32,10 @@ export default defineConfig({
       // NOTE: Initial low thresholds while only cart hook is tested.
       // Increase progressively as component/page tests are added.
       thresholds: {
-        lines: 8,
-        statements: 8,
-        functions: 25,
-        branches: 20
+        lines: 12,
+        statements: 12,
+        functions: 35,
+        branches: 25
       }
     }
   }
