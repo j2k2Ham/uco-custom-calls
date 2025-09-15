@@ -1,15 +1,28 @@
 @import "tailwindcss";
 
+/* Global CSS (Tailwind v4 inline + custom properties) */
 :root {
-  --background: #ffffff;
+  color-scheme: dark;
+  --background: #fff;
   --foreground: #171717;
+  /* Brand palette */
+  --color-camo: #1b1f1b;
+  --color-camo-light: #2a302a;
+  --color-brass: #d2a857;
+  --color-sky: #7aa6c9;
+  --color-sky-80: color-mix(in srgb, var(--color-sky) 80%, transparent);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  --color-camo: var(--color-camo);
+  --color-camo-light: var(--color-camo-light);
+  --color-brass: var(--color-brass);
+  --color-sky: var(--color-sky);
+  --color-sky-80: var(--color-sky-80);
 }
 
 @media (prefers-color-scheme: dark) {

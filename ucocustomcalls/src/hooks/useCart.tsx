@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Product } from "@/types";
 
 type CartItem = { id: string; title: string; price: number; qty: number; slug: string };
@@ -20,14 +20,10 @@ export function CartProvider({ children }: Readonly<{ children: React.ReactNode 
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem("uco.cart") : null;
+    const raw = localStorage.getItem("uco.cart");
     if (raw) setItems(JSON.parse(raw));
   }, []);
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("uco.cart", JSON.stringify(items));
-    }
-  }, [items]);
+  useEffect(() => localStorage.setItem("uco.cart", JSON.stringify(items)), [items]);
 
   const api = useMemo<CartContext>(() => ({
     items,
@@ -47,12 +43,10 @@ export function CartProvider({ children }: Readonly<{ children: React.ReactNode 
     total: items.reduce((sum: number, i: CartItem) => sum + i.price * i.qty, 0)
   }), [items, open]);
 
-  return React.createElement(Ctx.Provider, { value: api }, children);
+  return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }
-
 export function useCart() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useCart must be used within CartProvider");
   return ctx;
-}// Temporary stub: forward exports to implementation (useCart.tsx)
-export * from './useCart';
+}

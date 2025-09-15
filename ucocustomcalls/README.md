@@ -34,3 +34,109 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## Project Additions
+
+This project has been extended beyond the default template with tooling and utilities focused on commerce-like cart functionality, testing, and code quality.
+
+### Scripts
+
+| Script | Purpose |
+| ------ | ------- |
+| `npm run dev` | Start development server (Next.js + Turbopack) |
+| `npm run build` | Production build |
+| `npm start` | Run production build |
+| `npm run lint` | Run ESLint (Flat config + Next.js rules) |
+| `npm run lint:css` | Run Stylelint over global and module CSS |
+| `npm test` | Run Vitest once |
+| `npm run test:watch` | Run Vitest in watch mode |
+
+### Testing
+
+The test stack uses Vitest + React Testing Library (`jsdom` environment). Current coverage focuses on the cart hook logic (`src/hooks/useCart.ts`).
+
+Scenarios covered:
+
+1. Add first item (count & total increment)
+2. Add duplicate item (quantity accumulation)
+3. Remove single item
+4. Clear all items
+
+Local storage is cleared (`beforeEach`) to ensure deterministic tests. If you add new persistence features, mirror that reset pattern.
+
+### Cart Hook API (`useCart`)
+
+Located at `src/hooks/useCart.ts`. Provides a context-backed shopping cart with SSR‑safe hydration.
+
+State shape:
+```ts
+type CartItem = Product & { quantity: number };
+interface CartState {
+  items: CartItem[];
+  count: number;   // total item quantity
+  total: number;   // total price in cents
+}
+```
+
+Exports:
+```ts
+function useCart(): CartState & {
+  add(product: Product): void;
+  remove(id: string): void;      // removes entire line
+  clear(): void;                 // empties cart
+};
+```
+
+Persistence: Serializes to `localStorage` under the key `cart`. Guarded so it is safe during SSR / static builds (access only in `useEffect`).
+
+### Currency Utilities
+
+`src/lib/currency.ts` centralizes formatting and arithmetic:
+```ts
+formatUSD(cents: number): string; // Intl.NumberFormat, USD
+sumCents(values: number[]): number; // reduce helper
+```
+`Price` component (`src/components/Price.tsx`) uses `formatUSD` to keep pricing consistent.
+
+### Tailwind CSS v4 Notes
+
+Tailwind v4 removes the standalone CLI in favor of the PostCSS plugin. This project configures Tailwind via `postcss.config.mjs`:
+```js
+import tailwind from '@tailwindcss/postcss';
+export default { plugins: [tailwind()] };
+```
+Global styles (`src/app/globals.css`) include `@import "tailwindcss";` and an inline theme block (`@theme inline { ... }`) that defines semantic tokens (e.g. `--color-bg`).
+
+### Linting
+
+- ESLint (Flat config) covers TypeScript/React/Next core vitals.
+- Stylelint validates CSS (standard config) and plays well with Tailwind utility layers.
+- Run both with: `npm run lint && npm run lint:css`.
+
+### SonarQube / Code Quality
+
+`sonar-project.properties` is scoped so only `src/` under this package is analyzed. Adjust `sonar.sources` or exclusions as needed. Add coverage reporting later by integrating `vitest --coverage` and pointing Sonar to the LCOV file.
+
+### Accessibility Enhancements
+
+Audio components include `<track>` elements for captions. A placeholder WebVTT file lives at `public/captions/blank.vtt` and can be replaced with real transcripts.
+
+### Future Enhancements (Ideas)
+
+- Quantity decrement vs full remove
+- Line item price caching (derived vs stored)
+- Coupon/discount abstraction
+- Currency & locale switching (extend formatter)
+- Test coverage for persistence rehydration
+
+### Contributing
+
+1. Install deps: `npm install`
+2. Run lint & tests before pushing: `npm run lint && npm run lint:css && npm test`
+3. Keep new utilities framework-agnostic and typed.
+
+---
+
+If you have questions about the structure or want to expand functionality (e.g., coupons, multi-currency), open an issue or start a discussion.

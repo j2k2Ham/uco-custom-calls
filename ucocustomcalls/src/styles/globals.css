@@ -1,6 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Deprecated duplicate globals file retained temporarily; prefer src/app/globals.css */
+/* Intentionally left minimal. */
 
-:root { color-scheme: dark; }
-html, body { height: 100%; }
