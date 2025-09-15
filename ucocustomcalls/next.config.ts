@@ -1,10 +1,9 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  // Explicitly set turbopack root to silence multi-lockfile inference warning
-  turbopack: {
-    root: __dirname
-  }
-};
+// Using default Turbopack root inference. Previous explicit root override removed
+// after it caused a missing app-build-manifest during dev (ENOENT). If multi-lockfile
+// warnings reappear, address by ensuring only one package manager lockfile exists
+// at the repo root rather than forcing a custom root.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
