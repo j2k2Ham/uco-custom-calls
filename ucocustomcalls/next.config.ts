@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Explicitly set turbopack root to silence multi-lockfile inference warning
+  turbopack: {
+    root: __dirname
+  }
 };
 
 export default nextConfig;
