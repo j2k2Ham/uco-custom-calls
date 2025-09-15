@@ -1,20 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { ProductCard } from './ProductCard';
+import type { Product } from '@/types';
 
 // Minimal inline shape matching usage in ProductCard
-interface LocalProduct {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  category: string;
-  price: number;
-  images: { src: string; alt: string }[];
-  badges?: string[];
-  inStock: boolean;
-}
-
-function makeProduct(overrides: Partial<LocalProduct> = {}): LocalProduct {
+function makeProduct(overrides: Partial<Product> = {}): Product {
   return {
     id: 'p1',
     slug: 'product-one',
@@ -32,7 +21,7 @@ function makeProduct(overrides: Partial<LocalProduct> = {}): LocalProduct {
 describe('ProductCard', () => {
   it('renders product info and badges', () => {
   const product = makeProduct();
-  render(<ul><ProductCard product={product as unknown as any} /></ul>);
+  render(<ul><ProductCard product={product} /></ul>);
     expect(screen.getByText('Product One')).toBeInTheDocument();
     expect(screen.getByText('$123.45')).toBeInTheDocument();
     expect(screen.getByText('Acrylic')).toBeInTheDocument();
@@ -42,7 +31,7 @@ describe('ProductCard', () => {
 
   it('handles no badges branch (empty render container)', () => {
   const product = makeProduct({ id: 'p2', slug: 'no-badges', title: 'No Badge', badges: undefined });
-  render(<ul><ProductCard product={product as unknown as any} /></ul>);
+  render(<ul><ProductCard product={product} /></ul>);
     expect(screen.getByText('No Badge')).toBeInTheDocument();
     // Badge labels absent
     expect(screen.queryByText('Acrylic')).toBeNull();

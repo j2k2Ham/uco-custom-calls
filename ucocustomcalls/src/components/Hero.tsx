@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Hero() {
   return (
     <section className="relative bg-[url('/images/hero-marsh.jpg')] bg-cover bg-center">
@@ -10,8 +12,8 @@ export function Hero() {
             Tuned by waterfowlers, field-tested in Pennsylvania winters.
           </p>
           <div className="mt-6 flex gap-3">
-            <a href="/category/duck" className="px-4 py-2 bg-brass text-black rounded-md">Shop Duck</a>
-            <a href="/category/goose" className="px-4 py-2 border border-brass rounded-md">Shop Goose</a>
+            <Link href="/category/duck" className="px-4 py-2 bg-brass text-black rounded-md">Shop Duck</Link>
+            <Link href="/category/goose" className="px-4 py-2 border border-brass rounded-md">Shop Goose</Link>
           </div>
         </div>
       </div>
