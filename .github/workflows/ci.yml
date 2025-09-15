@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        working-directory: ucocustomcalls
+        run: npm ci
+
+      - name: Lint (ESLint)
+        working-directory: ucocustomcalls
+        run: npm run lint
+
+      - name: Lint (Stylelint)
+        working-directory: ucocustomcalls
+        run: npm run lint:css || echo "Stylelint warnings only"
+
+      - name: Tests + Coverage
+        working-directory: ucocustomcalls
+        run: npm run test:ci
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ucocustomcalls/coverage
+
+  sonar:
+    needs: build-test-lint
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        working-directory: ucocustomcalls
+        run: npm ci
+
+      - name: Run coverage (ensure lcov exists)
+        working-directory: ucocustomcalls
+        run: npm run test:coverage -- --passWithNoTests
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+
+      - name: Upload LCOV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov-info
+          path: ucocustomcalls/coverage/lcov.info

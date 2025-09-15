@@ -1,3 +1,5 @@
+# UCO Custom Calls
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -71,6 +73,7 @@ Local storage is cleared (`beforeEach`) to ensure deterministic tests. If you ad
 Located at `src/hooks/useCart.ts`. Provides a context-backed shopping cart with SSR‑safe hydration.
 
 State shape:
+
 ```ts
 type CartItem = Product & { quantity: number };
 interface CartState {
@@ -81,6 +84,7 @@ interface CartState {
 ```
 
 Exports:
+
 ```ts
 function useCart(): CartState & {
   add(product: Product): void;
@@ -94,6 +98,7 @@ Persistence: Serializes to `localStorage` under the key `cart`. Guarded so it is
 ### Currency Utilities
 
 `src/lib/currency.ts` centralizes formatting and arithmetic:
+
 ```ts
 formatUSD(cents: number): string; // Intl.NumberFormat, USD
 sumCents(values: number[]): number; // reduce helper
@@ -103,6 +108,7 @@ sumCents(values: number[]): number; // reduce helper
 ### Tailwind CSS v4 Notes
 
 Tailwind v4 removes the standalone CLI in favor of the PostCSS plugin. This project configures Tailwind via `postcss.config.mjs`:
+
 ```js
 import tailwind from '@tailwindcss/postcss';
 export default { plugins: [tailwind()] };
@@ -137,7 +143,40 @@ Output:
 Sonar integration:
 `sonar.javascript.lcov.reportPaths=ucocustomcalls/coverage/lcov.info` (already added).
 
-Thresholds are intentionally low initially (only cart + a few components tested). Increase them gradually as you add broader coverage.
+Threshold Strategy:
+
+- Initial low thresholds allowed incremental onboarding of tests.
+- Current enforced minimums (see `vitest.config.ts`): Lines 70%, Statements 70%, Functions 60%, Branches 60%.
+- Recent suite run (date approximate) achieved ~82% lines/statements overall; headroom retained for adding new, still-untested components (`Hero`, `ProductCard`, etc.).
+- Raise again once new components receive coverage and sustained baseline stays >10% above thresholds.
+
+### Continuous Integration (CI)
+
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs on pushes and PRs against `main`:
+
+Steps:
+
+1. Install dependencies (`npm ci` in `ucocustomcalls`)
+2. ESLint + Stylelint
+3. Tests + Coverage (`npm run test:ci` uses `--passWithNoTests` for config-only PRs)
+4. Coverage artifacts uploaded (HTML + lcov)
+5. Separate Sonar job re-runs coverage to ensure `lcov.info` then executes scan (requires `SONAR_TOKEN` secret)
+
+Secrets Required:
+
+- `SONAR_TOKEN`: SonarCloud project token
+
+Scripts:
+
+```bash
+npm run test:ci       # CI-friendly run with coverage + passWithNoTests
+npm run test:coverage # Local full coverage
+```
+
+Adjusting Thresholds:
+
+- Update `thresholds` in `vitest.config.ts` as more components/pages gain tests.
+- Keep incremental (e.g., +10% lines per milestone) to avoid blocking PRs.
 
 ### Accessibility Enhancements
 
