@@ -1,7 +1,10 @@
-import tailwind from "@tailwindcss/postcss";
-import autoprefixer from "autoprefixer";
-
-// Restored full config (Tailwind + Autoprefixer) after isolation test
-const config = { plugins: [tailwind(), autoprefixer()] };
+// Tailwind CSS v4 PostCSS configuration (object form recognized by Next.js)
+// Do NOT call the plugins; provide names so PostCSS loads them.
+const config = {
+	plugins: {
+		'@tailwindcss/postcss': {},
+		autoprefixer: {},
+	}
+};
 
 export default config;
