@@ -7,9 +7,11 @@ interface LogoProps {
   variant?: 'auto' | 'light' | 'dark';
   as?: 'link' | 'div';
   inlineSvg?: boolean; // when true, render inline SVG instead of raster
+  usePicture?: boolean; // render a <picture> with manual <source> elements
   className?: string;
   priority?: boolean;
   height?: number; // desired display height in px (defaults to 32)
+  sizes?: string; // override responsive sizes attribute
   ariaLabel?: string;
 }
 
@@ -17,7 +19,7 @@ interface LogoProps {
 const INTRINSIC = { width: 248, height: 140 };
 
 // Responsive sizes: prefer slightly smaller on narrow viewports
-const SIZES = '(max-width: 640px) 140px, (max-width: 1024px) 180px, 220px';
+const DEFAULT_SIZES = '(max-width: 640px) 140px, (max-width: 1024px) 180px, 220px';
 
 // Inline SVG fallback (simple placeholder / can be replaced)
 const InlineSvg = (props: { className?: string }) => (
@@ -44,7 +46,7 @@ const InlineSvg = (props: { className?: string }) => (
   </svg>
 );
 
-export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, className = '', priority, height = 32, ariaLabel = 'UCO Custom Calls' }: LogoProps) {
+export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, usePicture = false, className = '', priority, height = 32, sizes = DEFAULT_SIZES, ariaLabel = 'UCO Custom Calls' }: LogoProps) {
   const Tag: ElementType = as === 'link' ? Link : 'div';
 
   // Scale width proportionally based on desired display height vs intrinsic height
@@ -70,8 +72,30 @@ export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, classNa
     );
   }
 
+  // Manual <picture> path if requested; still provides dark/light sources via media queries
+  if (usePicture) {
+    return (
+      <Tag {...(as === 'link' ? { href: '/' } : {})} aria-label={ariaLabel} className={`flex items-center ${className}`}>
+        <picture className={sharedClasses}>
+          {/* Dark mode first so it matches when prefers-color-scheme dark */}
+          <source srcSet={darkSrc} media="(prefers-color-scheme: dark)" />
+          <Image
+            src={lightSrc}
+            alt={ariaLabel}
+            width={scaledWidth}
+            height={height}
+            priority={priority}
+            sizes={sizes}
+            className={sharedClasses}
+          />
+        </picture>
+        <span className="sr-only">{ariaLabel}</span>
+      </Tag>
+    );
+  }
+
   return (
-  <Tag {...(as === 'link' ? { href: '/' } : {})} aria-label={ariaLabel} className={`flex items-center ${className}`}>
+    <Tag {...(as === 'link' ? { href: '/' } : {})} aria-label={ariaLabel} className={`flex items-center ${className}`}>
       {/* Light / default */}
       <Image
         src={lightSrc}
@@ -79,7 +103,7 @@ export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, classNa
         width={scaledWidth}
         height={height}
         priority={priority}
-        sizes={SIZES}
+        sizes={sizes}
         className={`${sharedClasses} ${showLight}`}
       />
       {/* Dark variant (expects file to exist) */}
@@ -89,7 +113,7 @@ export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, classNa
         width={scaledWidth}
         height={height}
         priority={priority}
-        sizes={SIZES}
+        sizes={sizes}
         className={`${sharedClasses} ${showDark}`}
       />
       <span className="sr-only">{ariaLabel}</span>

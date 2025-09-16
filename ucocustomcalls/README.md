@@ -368,3 +368,58 @@ When Filing an Upstream Issue:
 
 Security Note: Scrub any absolute local file system paths in logs if sensitive.
 
+### Logo & Theming
+
+The header branding uses a `Logo` component (`src/components/Logo.tsx`) supporting light/dark variants, responsive sizing, optional `<picture>` output, and an inline SVG fallback.
+
+Props:
+
+- `variant`: `auto | light | dark` (default `auto` uses Tailwind `dark:` classes)
+- `height`: Display height in px (aspect ratio preserved via intrinsic dimensions 248x140)
+- `sizes`: Override responsive sizes attribute (default `(max-width: 640px) 140px, (max-width: 1024px) 180px, 220px`)
+- `inlineSvg`: Renders embedded SVG placeholder instead of raster assets
+- `usePicture`: Uses `<picture>` + `<source media="(prefers-color-scheme: dark)">` for native dark mode switching
+- `variant='auto'`: Renders both light & dark images with Tailwind dark utility toggling visibility
+
+Example usages:
+
+```tsx
+// Standard auto variant
+<Logo height={32} />
+
+// Force light only
+<Logo variant="light" height={40} />
+
+// Custom responsive sizes
+<Logo height={36} sizes="(max-width:800px) 160px, 240px" />
+
+// Inline SVG fallback (no external images)
+<Logo inlineSvg height={48} />
+
+// Picture-based dark mode (prefers-color-scheme)
+<Logo usePicture variant="auto" height={32} />
+```
+
+Assets:
+
+- Light: `public/images/company-logo-green-2x.png`
+- Dark (expected): `public/images/company-logo-green-2x-dark.png`
+
+If the dark file is absent the dark image entry will still be requested (404). Provide a temporary copy of the light asset if necessary:
+
+```bash
+cp public/images/company-logo-green-2x.png public/images/company-logo-green-2x-dark.png
+```
+
+### Theme Toggle
+
+`ThemeToggle` (`src/components/ThemeToggle.tsx`) switches the `dark` class on `<html>` and persists choice in `localStorage` (`theme=dark|light`). It is included in the `Header`.
+
+Behavior:
+
+1. On mount, reads stored preference; if `dark`, adds class immediately.
+2. Button toggles class & updates storage.
+3. Logo in `variant="auto"` reacts via Tailwind dark utilities or the `<picture>` media query path if `usePicture` is set.
+
+To remove the toggle from production, delete it from `Header.tsx` or wrap in a feature flag.
+
