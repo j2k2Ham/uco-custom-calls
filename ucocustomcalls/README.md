@@ -47,9 +47,12 @@ This project has been extended beyond the default template with tooling and util
 
 | Script | Purpose |
 | ------ | ------- |
-| `npm run dev` | Start development server (Next.js + Turbopack) |
-| `npm run build` | Production build |
-| `npm start` | Run production build |
+| `npm run dev` | Start development server (Turbopack – experimental) |
+| `npm run dev:webpack` | Start development server (classic Webpack) |
+| `npm run build` | Production build (Turbopack) |
+| `npm run build:webpack` | Production build (classic Webpack) |
+| `npm start` | Run production build (latest build flavor) |
+| `npm run start:webpack` | Start classic Webpack production build |
 | `npm run lint` | Run ESLint (Flat config + Next.js rules) |
 | `npm run lint:css` | Run Stylelint over global and module CSS |
 | `npm test` | Run Vitest once |
@@ -246,3 +249,54 @@ Audio components include `<track>` elements for captions. A placeholder WebVTT f
 ---
 
 If you have questions about the structure or want to expand functionality (e.g., coupons, multi-currency), open an issue or start a discussion.
+
+### Turbopack Fallback & CSS Crash Troubleshooting
+
+On some Windows environments an internal Turbopack crash (`TurbopackInternalError` while processing `globals.css`) can surface as:
+
+```text
+ENOENT: no such file or directory, open .next/server/app/page/app-build-manifest.json
+```
+
+This is a secondary symptom: the CSS worker crashes before writing all expected app manifests.
+
+#### Fallback Scripts
+
+Classic (Webpack) equivalents have been added:
+
+```bash
+npm run dev:webpack        # Dev server without Turbopack
+npm run build:webpack      # Production build without Turbopack
+npm run start:webpack      # Start production build (classic)
+```
+
+#### Minimal PostCSS Isolation
+
+A minimal config is provided at `postcss.minimal.mjs`:
+
+```js
+import tailwind from "@tailwindcss/postcss";
+const config = { plugins: [tailwind()] };
+export default config;
+```
+
+To test whether the crash is caused by an interaction with `autoprefixer` or additional CSS features:
+
+1. Backup current `postcss.config.mjs`.
+2. Replace its contents with the minimal config above (or temporarily rename files).
+3. Clean build output:
+
+  ```bash
+  rimraf .next
+  npm run dev -- --port=3000
+  ```
+
+1. If stable, reintroduce `autoprefixer()` and custom CSS blocks incrementally.
+
+#### Tips
+
+- Ensure only one dev server instance is running (port collision forces fallback port e.g. 3001 and can confuse manual testing).
+- Run `npm run build:webpack` prior to filing an upstream issue to confirm it is Turbopack-specific.
+- Include the panic log referenced in the console (`next-panic-*.log`) when reporting.
+
+Once a patched Next.js release addresses the worker crash you can return to Turbopack by using the default `npm run dev` / `npm run build` commands.

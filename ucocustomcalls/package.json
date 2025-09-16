@@ -8,6 +8,8 @@
     "dev:clean": "rimraf .next .cache/eslint .cache/stylelint && next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
+  "build:webpack": "next build",
+  "start:webpack": "next start",
     "lint": "eslint --cache --cache-location .cache/eslint",
     "lint:fix": "eslint --cache --cache-location .cache/eslint --fix",
     "lint:clear-cache": "rimraf .cache/eslint",
