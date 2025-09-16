@@ -38,6 +38,14 @@ jobs:
         working-directory: ucocustomcalls
         run: npm run test:ci
 
+      - name: Production Build (classic)
+        working-directory: ucocustomcalls
+        run: npm run build:ci
+
+      - name: Verify Build Artifacts
+        working-directory: ucocustomcalls
+        run: npm run verify:build
+
       - name: Security Audit (high severity)
         working-directory: ucocustomcalls
         run: npm run audit:high || echo "High severity vulnerabilities found" && exit 1

@@ -304,3 +304,67 @@ To test whether the crash is caused by an interaction with `autoprefixer` or add
 - Include the panic log referenced in the console (`next-panic-*.log`) when reporting.
 
 Once a patched Next.js release addresses the worker crash you can return to Turbopack by using the default `npm run dev` / `npm run build` commands.
+
+### Build Health
+
+After any production build you can run a lightweight integrity check that validates expected artifacts and surfaces common failure signatures (notably partial Turbopack output or missing manifests):
+
+```bash
+npm run build         # or any build variant
+npm run verify:build  # run health checks
+```
+
+What it checks:
+
+- Presence of `.next` directory
+- Presence and non‑zero size of `.next/build-manifest.json`
+- Presence of top-level `app-build-manifest.json` (Turbopack writes a flattened location early)
+- Warns (does not fail) if `.next/server/app` is missing (often indicates an early Turbopack crash)
+
+Exit Codes:
+
+- `0` All required artifacts present
+- `1` Any required artifact missing / empty
+
+Integrating into CI (recommended): add a step immediately after the build step and before starting / deploying:
+
+Example GitHub Actions snippet (within the existing job after `npm run build:ci`):
+
+```yaml
+  - name: Build (classic)
+    run: npm run build:ci
+    working-directory: ucocustomcalls
+
+  - name: Verify build artifacts
+    run: npm run verify:build
+    working-directory: ucocustomcalls
+```
+
+If you later re-enable Turbopack as the default, keep the verify step; it will quickly catch regressions that manifest as silent 500s during first request.
+
+### Troubleshooting
+
+| Symptom | Likely Cause | Action |
+| ------- | ------------ | ------ |
+| `ENOENT ... app-build-manifest.json` | Turbopack CSS worker crash | Use `npm run dev:webpack`, capture panic log, file upstream issue |
+| `Page OK in dev but prod 500` | Partial build / missing manifest | Run `npm run verify:build`; inspect `.next` completeness |
+| Port auto-changes (3000→3001) | Previous dev server running | Terminate prior process; re-run desired dev script |
+| Tailwind classes missing | PostCSS plugin misconfig | Ensure `postcss.config.mjs` exports Tailwind plugin array |
+| High cold start time | Large, un-treeshaken dependency | Analyze with `next build --profile` (when Turbopack stable) or webpack analyze plugin |
+
+General Recovery Steps:
+
+1. Clean: `rimraf .next` (Windows) / `rm -rf .next` (Unix)
+2. Re-run classic build: `npm run build:webpack`
+3. Verify: `npm run verify:build`
+4. Start: `npm run start:webpack`
+5. If classic passes but Turbopack fails: run `npm run diagnose:turbopack` and attach logs to `TURBOPACK_ISSUE_REPORT.md` when filing upstream.
+
+When Filing an Upstream Issue:
+
+- Include OS, Node version (`node -v`), Next.js version, and the panic log file content.
+- Note whether minimal PostCSS config (`postcss.minimal.mjs`) still reproduces.
+- Provide the output of `npm run diagnose:turbopack` including the final exit code.
+
+Security Note: Scrub any absolute local file system paths in logs if sensitive.
+
