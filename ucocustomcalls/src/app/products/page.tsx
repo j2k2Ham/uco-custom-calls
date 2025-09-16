@@ -1,4 +1,5 @@
 import { PRODUCTS } from '@/lib/products';
+import { productsListingUrl } from '@/lib/urls';
 import { ProductGrid } from '@/components/ProductGrid';
 import { CategoryNav } from '@/components/CategoryNav';
 import type { Metadata } from 'next';
@@ -18,6 +19,19 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 space-y-10">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Products', item: productsListingUrl() }
+            ]
+          })
+        }}
+      />
       <header className="flex flex-col gap-4">
         <h1 className="text-3xl font-semibold">All Products</h1>
         <p className="text-sm text-gray-300 max-w-2xl">Explore handcrafted duck and goose calls along with premium paracord lanyards. All pricing and descriptions are placeholders pending final catalog curation.</p>

@@ -10,14 +10,16 @@ export const PRODUCTS: Product[] = [
     category: "duck",
     priceCents: 95_00,
     images: [
-      { src: "/images/duck-whiskey-1.jpg", alt: "Whiskey River Pintail", primary: true },
-      { src: "/images/duck-whiskey-2.jpg", alt: "Whiskey River Pintail close" }
+      { src: "/images/woodie.jpg", alt: "Whiskey River Pintail", primary: true },
+      { src: "/images/whh.jpg", alt: "Whiskey River Pintail close" }
     ],
     badges: ["Acrylic", "Single Reed", "Handturned"],
     features: ["Open water tuning", "Crisp top end", "Easy low air start"],
     variantOptions: { reed: ["single"], color: ["Whiskey River"] },
     audio: [{ src: "/audio/pintail-openwater.mp3", label: "Open Water Demo" }],
-    inStock: true
+    inStock: true,
+    ratingValue: 4.8,
+    ratingCount: 57
   },
   {
     id: "goose-canada-ocean",
@@ -28,12 +30,14 @@ export const PRODUCTS: Product[] = [
     category: "goose",
     priceCents: 110_00,
     images: [
-      { src: "/images/goose-ocean-1.jpg", alt: "Ocean Green Canada Goose", primary: true }
+      { src: "/images/goose.jpg", alt: "Ocean Green Canada Goose", primary: true }
     ],
     badges: ["Acrylic", "Goose"],
     features: ["Fast break", "Deep honk resonance", "Effortless clucks"],
     audio: [{ src: "/audio/canada-honk.mp3", label: "Canada Honk" }],
-    inStock: true
+    inStock: true,
+    ratingValue: 4.6,
+    ratingCount: 34
   },
   {
     id: "lanyard-brass",
@@ -43,7 +47,7 @@ export const PRODUCTS: Product[] = [
       "Durable paracord with brass finisher. Holds multiple calls, field-tested in PA winters.",
     category: "lanyards",
     priceCents: 35_00,
-    images: [{ src: "/images/lanyard-brass-1.jpg", alt: "Paracord Lanyard", primary: true }],
+  images: [{ src: "/images/uco-calls-1_orig.png", alt: "Paracord Lanyard", primary: true }],
     badges: ["Paracord", "Handmade"],
     features: ["Cold weather tested", "Multiple call drops", "Brass accent"],
     inStock: true

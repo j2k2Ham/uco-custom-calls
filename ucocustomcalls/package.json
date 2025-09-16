@@ -27,6 +27,9 @@
     "test:bench": "vitest bench src/bench --run",
     "coverage:badge": "node scripts/coverage-badge.mjs",
     "audit:high": "npm audit --audit-level=high",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -62,6 +65,12 @@
     "stylelint-config-standard-scss": "^13.0.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@playwright/test": "^1.48.2"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": ["@playwright/test"]
+    }
   }
 }

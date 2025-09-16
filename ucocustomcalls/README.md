@@ -458,3 +458,65 @@ Behavior:
 
 To remove the toggle from production, delete it from `Header.tsx` or wrap in a feature flag.
 
+### End-to-End (E2E) SEO Tests (Playwright)
+
+Playwright is configured to validate critical SEO structured data (Product + Breadcrumb JSON-LD) and basic page reachability.
+
+Config: `playwright.config.ts`
+
+Key features:
+
+- `webServer` auto-starts `npm run dev:webpack` before tests (reuses existing server locally)
+- Single Chromium project (extend as needed)
+- HTML report output: `e2e-report/` (serve with `npx playwright show-report e2e-report`)
+
+Scripts:
+
+```bash
+npm run e2e       # headless run
+npm run e2e:ui    # interactive UI mode
+npm run e2e:report # open last HTML report
+```
+
+Test File: `e2e/seo.spec.ts`
+
+- Verifies `/products` exposes a BreadcrumbList (1 level)
+- Verifies a product detail page exposes Product + BreadcrumbList + (if present) AggregateRating
+
+Adding More Tests:
+
+1. Create new spec under `e2e/`
+2. Use `page.locator` or JSON-LD extraction helper pattern
+3. Keep tests fast (<5s) to avoid CI flakiness
+
+CI Integration (Optional): Add a separate job or extend existing workflow after build:
+
+```yaml
+  - name: Install browsers
+    run: npx playwright install --with-deps
+    working-directory: ucocustomcalls
+  - name: E2E tests
+    run: npm run e2e
+    working-directory: ucocustomcalls
+```
+
+If you add authentication or stateful flows, consider using Playwright fixtures and tracing (`trace: 'on-first-retry'` already enabled).
+
+### Dynamic Route Params (Next.js 15)
+
+The product detail route (`/products/[slug]`) accesses `params` as a promise to satisfy the synchronous dynamic params warning introduced in Next.js 15. Pattern used:
+
+```ts
+interface ProductPageProps { params: ProductPageParams | Promise<ProductPageParams> }
+export async function generateMetadata({ params }: ProductPageProps) {
+  const resolved = await params; /* ... */
+}
+export default async function Page({ params }: ProductPageProps) {
+  const resolved = await params; /* ... */
+}
+```
+
+### Image Placeholders
+
+Sample product images reference existing assets in `public/images/` (e.g. `woodie.jpg`, `goose.jpg`). Replace with real catalog imagery as they become available. Avoid broken image requests to keep Playwright logs clean.
+

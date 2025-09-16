@@ -1,16 +1,20 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PRODUCTS } from "@/lib/products";
+import { productUrl, categoryUrl, productsListingUrl } from '@/lib/urls';
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { formatPriceFromCents, getPriceCents } from "@/types/product";
 import { ProductGallery } from "@/components/ProductGallery";
 
 interface ProductPageParams { slug: string }
-interface ProductPageProps { params: ProductPageParams }
+interface ProductPageProps { params: ProductPageParams | Promise<ProductPageParams> }
+
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = PRODUCTS.find(p => p.slug === params.slug);
+  const resolved = await params;
+  const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return { title: 'Product Not Found' };
   const title = product.seo?.metaTitle || product.title;
   const description = product.seo?.metaDescription || product.description.slice(0, 160);
@@ -23,14 +27,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title,
       description,
       images,
-      url: `https://ucocustomcalls.com/products/${product.slug}`
+      url: productUrl(product.slug)
     },
     alternates: { canonical: `/products/${product.slug}` }
   };
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = PRODUCTS.find(p => p.slug === params.slug);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const resolved = await params;
+  const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return notFound();
 
   return (
@@ -39,20 +44,47 @@ export default function ProductPage({ params }: ProductPageProps) {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org/',
-            '@type': 'Product',
-            name: product.title,
-            description: product.description,
-            image: product.images.map(i => i.src),
-            sku: product.id,
-            offers: {
-              '@type': 'Offer',
-              availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-              priceCurrency: 'USD',
-              price: (getPriceCents(product) / 100).toFixed(2),
-              url: `https://ucocustomcalls.com/products/${product.slug}`
+          __html: JSON.stringify((() => {
+            const base: Record<string, unknown> = {
+              '@context': 'https://schema.org/',
+              '@type': 'Product',
+              name: product.title,
+              description: product.description,
+              image: product.images.map(i => i.src),
+              sku: product.id,
+              offers: {
+                '@type': 'Offer',
+                availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                priceCurrency: 'USD',
+                price: (getPriceCents(product) / 100).toFixed(2),
+                url: productUrl(product.slug),
+                itemCondition: 'https://schema.org/NewCondition'
+              }
+            };
+            if (typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number') {
+              base.aggregateRating = {
+                '@type': 'AggregateRating',
+                ratingValue: product.ratingValue,
+                reviewCount: product.ratingCount,
+                bestRating: product.ratingBest ?? 5
+              };
             }
+            return base;
+          })())
+        }}
+      />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Products', item: productsListingUrl() },
+              { '@type': 'ListItem', position: 2, name: product.category, item: categoryUrl(product.category) },
+              { '@type': 'ListItem', position: 3, name: product.title, item: productUrl(product.slug) }
+            ]
           })
         }}
       />

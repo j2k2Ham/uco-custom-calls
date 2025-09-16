@@ -26,6 +26,9 @@ export interface Product {
   inStock: boolean;
   variantOptions?: Record<string, string[]>;
   seo?: { metaTitle?: string; metaDescription?: string; ogImage?: string };
+  ratingCount?: number; // optional number of ratings
+  ratingValue?: number; // average rating value (e.g. 4.8)
+  ratingBest?: number;  // best possible rating (default 5)
 }
 
 // Presentation helper to format product price (lazy import of currency util avoided here for tree-shaking control)
