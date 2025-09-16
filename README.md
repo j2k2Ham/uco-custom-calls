@@ -66,3 +66,42 @@ Adjust the canonical domain inside the JSON-LD (currently `https://ucocustomcall
 - Add breadcrumb structured data.
 - Expand gallery for zoom / swipe gestures.
 - Integrate real inventory + pricing source of truth (CMS or headless commerce).
+
+## Custom Inquiry System
+
+The `/custom` page provides an AJAX form posting to `/api/contact`.
+
+Features:
+
+- Field validation (name, email, message required)
+- Honeypot field (`company`) for basic bot trapping
+- In-memory rate limiting: 5 submissions per IP per 10 minutes (HTTP 429 `rate-limited`)
+- Persistence: JSON lines appended to `data/inquiries.log`
+- Email dispatch via `nodemailer` using environment configuration
+
+### Environment Variables
+
+Define in `ucocustomcalls/.env.local`:
+
+```bash
+INQUIRY_DEST_EMAIL=owner@example.com
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=apikey-or-username
+SMTP_PASS=secret-password
+```
+
+If SMTP vars are omitted, mail send will likely fail (500 `email-failed`).
+
+### E2E Tests
+
+Playwright tests include `e2e/inquiry.spec.ts` which verify:
+
+- Successful submission flow
+- Honeypot spam rejection
+
+Run: `npm run test:e2e`
+
+### Log File
+
+All inquiries append to `data/inquiries.log` (one JSON object per line) with timestamp and IP (`x-forwarded-for`). Secure or rotate this file in production.

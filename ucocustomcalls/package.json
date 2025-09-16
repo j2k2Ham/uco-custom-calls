@@ -39,7 +39,8 @@
     "next": "^15.5.3",
     "postcss": "^8.5.6",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "nodemailer": "^6.9.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -66,7 +67,8 @@
     "tailwindcss": "^4.1.13",
     "typescript": "^5",
     "vitest": "^3.2.4",
-    "@playwright/test": "^1.48.2"
+    "@playwright/test": "^1.48.2",
+    "@types/nodemailer": "^6.4.14"
   },
   "pnpm": {
     "peerDependencyRules": {

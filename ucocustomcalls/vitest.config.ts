@@ -18,7 +18,8 @@ export default defineConfig({
       '**/.next/**',
       '**/node_modules/**',
       'src/app/**',
-      'src/types/**'
+      'src/types/**',
+      'e2e/**'
     ],
     coverage: {
       provider: 'v8',
