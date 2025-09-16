@@ -1,8 +1,9 @@
 import tailwind from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
 
-// Tailwind v4 PostCSS plugin: using reference directly avoids malformed config errors
+// Tailwind v4 PostCSS plugin chain with autoprefixer
 const config = {
-  plugins: [tailwind]
+  plugins: [tailwind(), autoprefixer()]
 };
 
 export default config;
