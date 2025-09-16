@@ -11,7 +11,7 @@ describe('products data', () => {
       expect(typeof p.title).toBe('string');
       expect(typeof p.description).toBe('string');
       expect(typeof p.category).toBe('string');
-      expect(typeof p.price).toBe('number');
+  expect(typeof p.priceCents).toBe('number');
       expect(Array.isArray(p.images)).toBe(true);
       expect(typeof p.inStock).toBe('boolean');
     }

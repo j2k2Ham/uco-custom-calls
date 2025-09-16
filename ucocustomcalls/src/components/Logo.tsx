@@ -22,14 +22,15 @@ const INTRINSIC = { width: 248, height: 140 };
 const DEFAULT_SIZES = '(max-width: 640px) 140px, (max-width: 1024px) 180px, 220px';
 
 // Inline SVG fallback (simple placeholder / can be replaced)
-const InlineSvg = (props: { className?: string }) => (
+const InlineSvg = (props: { className?: string; title?: string }) => (
   <svg
     viewBox="0 0 248 140"
     role="img"
-    aria-label="UCO Custom Calls"
+    aria-hidden={props.title ? undefined : true}
     className={props.className}
     xmlns="http://www.w3.org/2000/svg"
   >
+    {props.title && <title>{props.title}</title>}
     <rect width="248" height="140" rx="12" fill="#1b1f1b" />
     <text
       x="50%"
@@ -66,8 +67,7 @@ export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, usePict
   if (inlineSvg) {
     return (
       <Tag {...(as === 'link' ? { href: '/' } : {})} aria-label={ariaLabel} className={`flex items-center ${className}`}>
-        <InlineSvg className={sharedClasses} />
-        <span className="sr-only">{ariaLabel}</span>
+  <InlineSvg className={sharedClasses} title={ariaLabel} />
       </Tag>
     );
   }
@@ -109,14 +109,15 @@ export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, usePict
       {/* Dark variant (expects file to exist) */}
       <Image
         src={darkSrc}
-        alt={ariaLabel}
+        alt=""
+        aria-hidden="true"
         width={scaledWidth}
         height={height}
         priority={priority}
         sizes={sizes}
         className={`${sharedClasses} ${showDark}`}
       />
-      <span className="sr-only">{ariaLabel}</span>
+      <span className="sr-only" aria-hidden="true">{ariaLabel}</span>
     </Tag>
   );
 }

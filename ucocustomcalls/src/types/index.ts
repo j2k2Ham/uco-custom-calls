@@ -1,18 +1,22 @@
 export type CategoryHandle = "duck" | "goose" | "lanyards";
 
-export type Product = {
+// Deprecated legacy Product shape retained for transitional compatibility.
+// Prefer importing from "@/types/product" which defines authoritative Product.
+export type LegacyProduct = {
   id: string;
   slug: string;
   title: string;
   description: string;
   category: CategoryHandle;
-  price: number;            // in USD (cents optional)
+  price: number;
   images: { src: string; alt: string }[];
-  badges?: string[];        // e.g., ["Single Reed", "Acrylic"]
+  badges?: string[];
   options?: {
     reed?: ("single" | "double")[];
     color?: string[];
   };
-  audio?: { src: string; label: string }[]; // sound files per product
+  audio?: { src: string; label: string }[];
   inStock: boolean;
 };
+
+export type { Product } from "./product";

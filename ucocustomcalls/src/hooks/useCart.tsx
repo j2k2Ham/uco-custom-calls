@@ -1,8 +1,8 @@
 "use client";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { Product } from "@/types";
+import type { Product } from "@/types/product";
 
-type CartItem = { id: string; title: string; price: number; qty: number; slug: string };
+type CartItem = { id: string; title: string; priceCents: number; qty: number; slug: string };
 type CartContext = {
   items: CartItem[];
   add: (p: Product, qty?: number) => void;
@@ -28,7 +28,7 @@ export function CartProvider({ children }: Readonly<{ children: React.ReactNode 
   function upsertItem(prev: CartItem[], p: Product, qty: number): CartItem[] {
     const existingIndex = prev.findIndex(i => i.id === p.id);
     if (existingIndex === -1) {
-      return [...prev, { id: p.id, title: p.title, price: p.price, qty, slug: p.slug }];
+      return [...prev, { id: p.id, title: p.title, priceCents: p.priceCents, qty, slug: p.slug }];
     }
     const clone = [...prev];
     const current = clone[existingIndex];
@@ -41,7 +41,7 @@ export function CartProvider({ children }: Readonly<{ children: React.ReactNode 
   }
 
   const count = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
-  const total = useMemo(() => items.reduce((sum, i) => sum + i.price * i.qty, 0), [items]);
+  const total = useMemo(() => items.reduce((sum, i) => sum + i.priceCents * i.qty, 0), [items]);
 
   const api = useMemo<CartContext>(() => ({
     items,

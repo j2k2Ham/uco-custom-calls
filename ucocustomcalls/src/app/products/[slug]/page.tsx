@@ -1,36 +1,66 @@
-"use client";
-
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { PRODUCTS } from "@/lib/products";
-import Image from "next/image";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { AudioPlayer } from "@/components/AudioPlayer";
-import { Price } from "@/components/Price";
+import { formatPriceFromCents, getPriceCents } from "@/types/product";
+import { ProductGallery } from "@/components/ProductGallery";
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
+interface ProductPageParams { slug: string }
+interface ProductPageProps { params: ProductPageParams }
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const product = PRODUCTS.find(p => p.slug === params.slug);
+  if (!product) return { title: 'Product Not Found' };
+  const title = product.seo?.metaTitle || product.title;
+  const description = product.seo?.metaDescription || product.description.slice(0, 160);
+  const images = product.images?.[0] ? [{ url: product.images[0].src, alt: product.images[0].alt }] : undefined;
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'website',
+      title,
+      description,
+      images,
+      url: `https://ucocustomcalls.com/products/${product.slug}`
+    },
+    alternates: { canonical: `/products/${product.slug}` }
+  };
+}
+
+export default function ProductPage({ params }: ProductPageProps) {
   const product = PRODUCTS.find(p => p.slug === params.slug);
   if (!product) return notFound();
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-10 lg:grid lg:grid-cols-2 lg:gap-10">
-      <div>
-        <div className="relative aspect-square rounded-lg overflow-hidden border border-camo-light">
-          <Image src={product.images[0].src} alt={product.images[0].alt} fill className="object-cover" />
-        </div>
-        {product.images.slice(1).length > 0 && (
-          <ul className="mt-3 grid grid-cols-4 gap-2">
-            {product.images.slice(1).map((img, i) => (
-              <li key={i} className="relative aspect-square border border-camo-light rounded">
-                <Image src={img.src} alt={img.alt} fill className="object-cover" />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org/',
+            '@type': 'Product',
+            name: product.title,
+            description: product.description,
+            image: product.images.map(i => i.src),
+            sku: product.id,
+            offers: {
+              '@type': 'Offer',
+              availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              priceCurrency: 'USD',
+              price: (getPriceCents(product) / 100).toFixed(2),
+              url: `https://ucocustomcalls.com/products/${product.slug}`
+            }
+          })
+        }}
+      />
+      <div><ProductGallery product={product} /></div>
 
       <div className="mt-8 lg:mt-0">
         <h1 className="text-3xl font-semibold">{product.title}</h1>
-        <p className="mt-1 text-brass text-xl"><Price cents={product.price} /></p>
+  <p className="mt-1 text-brass text-xl">{formatPriceFromCents(getPriceCents(product))}</p>
         <p className="mt-4 text-sky">{product.description}</p>
 
         {product.audio && product.audio.length > 0 && (

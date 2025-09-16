@@ -113,6 +113,41 @@ sumCents(values: number[]): number; // reduce helper
 
 `Price` component (`src/components/Price.tsx`) uses `formatUSD` to keep pricing consistent.
 
+### Pricing & Legacy Compatibility
+
+All canonical product prices are stored as integer cents via the `priceCents` field. Earlier fixtures and some tests used a loose `price` field whose unit (dollars vs cents) was ambiguous. To bridge that gap we introduced `getPriceCents` (`src/types/product.ts`) with a deterministic heuristic:
+
+Heuristic Rules:
+
+1. If `priceCents` is present (number) -> return as-is (authoritative)
+2. Else if `price` < 1 (e.g. `0.5`) -> treat as fractional dollars: multiply by 100 (=> 50¢)
+3. Else if `price` is an integer >= 100 -> treat as cents already (1000 => $10.00)
+4. Else if `price` is an integer 1..99 -> treat as whole dollars: multiply by 100 (15 => 1500)
+5. Else if `price` has decimals (e.g. 19.99) -> treat as dollars with decimals: multiply by 100 (19.99 => 1999)
+6. Fallback -> 0
+
+Examples:
+
+| Input Shape | Interpretation | Result (cents) | Reason |
+|-------------|----------------|----------------|--------|
+| `{ priceCents: 12999 }` | Already canonical | 12999 | Rule 1 |
+| `{ price: 0.5 }` | 50¢ fractional dollars | 50 | Rule 2 |
+| `{ price: 15 }` | $15 whole dollars | 1500 | Rule 4 |
+| `{ price: 100 }` | 100¢ ($1.00) | 100 | Rule 3 |
+| `{ price: 12999 }` | 12999¢ ($129.99) | 12999 | Rule 3 |
+| `{ price: 19.99 }` | $19.99 | 1999 | Rule 5 |
+
+Rationale: Most historic test data used mid-to-large integers (>=100) to mean cents (e.g. 1000 => $10.00) while small integers (like 15) were intended as dollars. This dual intent created inflated totals after the migration. The heuristic is stable, idempotent, and centralized so both cart hydration and display code share the same logic.
+
+Migration Guidance:
+
+1. Prefer adding / refactoring to use `priceCents` in new data.
+2. When touching any remaining objects with `price`, convert them to `priceCents` explicitly (e.g. 1000 => `priceCents: 1000`).
+3. Avoid persisting mixed objects (both `price` and `priceCents`). If both are present only `priceCents` is used.
+4. If you import external feeds with ambiguous units, normalize them once at ingestion to `priceCents` and drop the original numeric field.
+
+Testing: Dedicated unit tests in `src/types/product.test.ts` assert each rule above; extending the heuristic requires updating those tests to make intent explicit.
+
 ### Tailwind CSS v4 Notes
 
 Tailwind v4 removes the standalone CLI in favor of the PostCSS plugin. This project configures Tailwind via `postcss.config.mjs`:

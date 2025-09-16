@@ -21,7 +21,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 <div className="text-sm text-sky/80">Qty: {i.qty}</div>
               </div>
               <div className="text-right">
-                <div><Price cents={i.price * i.qty} /></div>
+                <div><Price cents={i.priceCents * i.qty} /></div>
                 <button onClick={() => remove(i.id)} className="text-xs text-sky/70 hover:text-white mt-1">Remove</button>
               </div>
             </li>

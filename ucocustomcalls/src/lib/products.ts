@@ -1,4 +1,4 @@
-import { Product } from "@/types";
+import { Product } from "@/types/product";
 
 export const PRODUCTS: Product[] = [
   {
@@ -8,13 +8,14 @@ export const PRODUCTS: Product[] = [
     description:
       "Hand-turned acrylic Pintail duck call tuned for open water with crisp top end and easy low air start.",
     category: "duck",
-    price: 95_00,
+    priceCents: 95_00,
     images: [
-      { src: "/images/duck-whiskey-1.jpg", alt: "Whiskey River Pintail" },
+      { src: "/images/duck-whiskey-1.jpg", alt: "Whiskey River Pintail", primary: true },
       { src: "/images/duck-whiskey-2.jpg", alt: "Whiskey River Pintail close" }
     ],
     badges: ["Acrylic", "Single Reed", "Handturned"],
-    options: { reed: ["single"], color: ["Whiskey River"] },
+    features: ["Open water tuning", "Crisp top end", "Easy low air start"],
+    variantOptions: { reed: ["single"], color: ["Whiskey River"] },
     audio: [{ src: "/audio/pintail-openwater.mp3", label: "Open Water Demo" }],
     inStock: true
   },
@@ -25,11 +26,12 @@ export const PRODUCTS: Product[] = [
     description:
       "Fast break, deep honk, effortless clucks. Field-ready acrylic tuned for Canada geese.",
     category: "goose",
-    price: 110_00,
+    priceCents: 110_00,
     images: [
-      { src: "/images/goose-ocean-1.jpg", alt: "Ocean Green Canada Goose" }
+      { src: "/images/goose-ocean-1.jpg", alt: "Ocean Green Canada Goose", primary: true }
     ],
     badges: ["Acrylic", "Goose"],
+    features: ["Fast break", "Deep honk resonance", "Effortless clucks"],
     audio: [{ src: "/audio/canada-honk.mp3", label: "Canada Honk" }],
     inStock: true
   },
@@ -40,8 +42,10 @@ export const PRODUCTS: Product[] = [
     description:
       "Durable paracord with brass finisher. Holds multiple calls, field-tested in PA winters.",
     category: "lanyards",
-    price: 35_00,
-    images: [{ src: "/images/lanyard-brass-1.jpg", alt: "Paracord Lanyard" }],
+    priceCents: 35_00,
+    images: [{ src: "/images/lanyard-brass-1.jpg", alt: "Paracord Lanyard", primary: true }],
+    badges: ["Paracord", "Handmade"],
+    features: ["Cold weather tested", "Multiple call drops", "Brass accent"],
     inStock: true
   }
 ];
@@ -49,5 +53,6 @@ export const PRODUCTS: Product[] = [
 export const CATEGORIES = [
   { handle: "duck", name: "Duck Calls" },
   { handle: "goose", name: "Goose Calls" },
-  { handle: "lanyards", name: "Paracord Lanyards" }
+  { handle: "lanyards", name: "Paracord Lanyards" },
+  { handle: "accessories", name: "Accessories" }
 ] as const;

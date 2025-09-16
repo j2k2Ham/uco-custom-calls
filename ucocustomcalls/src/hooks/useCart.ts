@@ -1,69 +1,94 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
-import type { Product } from "@/types";
+"use client";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import type { Product } from "@/types/product";
+import { getPriceCents } from "@/types/product";
 
-type CartItem = { id: string; title: string; price: number; qty: number; slug: string };
+type CartItem = { id: string; title: string; priceCents: number; qty: number; slug: string };
 type CartContext = {
-  items: CartItem[];
-  add: (p: Product, qty?: number) => void;
-  remove: (id: string) => void;
-  clear: () => void;
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  count: number;
-  total: number;
+	items: CartItem[];
+	add: (p: Product, qty?: number) => void;
+	remove: (id: string) => void;
+	clear: () => void;
+	open: boolean;
+	setOpen: (v: boolean) => void;
+	count: number;
+	total: number;
 };
 const Ctx = createContext<CartContext | null>(null);
 
 export function CartProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [open, setOpen] = useState(false);
+	const [items, setItems] = useState<CartItem[]>([]);
+	const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem("uco.cart") : null;
-    if (raw) setItems(JSON.parse(raw));
-  }, []);
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("uco.cart", JSON.stringify(items));
-    }
-  }, [items]);
+	useEffect(() => {
+		const raw = localStorage.getItem("uco.cart");
+		if (raw) {
+			try {
+				type UnknownItem = { priceCents?: number; price?: number; [k: string]: unknown };
+				const parsed = JSON.parse(raw) as UnknownItem[];
+				if (Array.isArray(parsed)) {
+					const normalized = parsed
+						.map(it => {
+							const base = it as Record<string, unknown>;
+							if (typeof base.id !== 'string' || typeof base.title !== 'string' || typeof base.slug !== 'string') return null;
+							const qty = typeof base.qty === 'number' && base.qty > 0 ? base.qty : 1;
+							let priceCents = 0;
+							if (typeof base.priceCents === 'number' && !Number.isNaN(base.priceCents)) priceCents = base.priceCents;
+							else if (typeof base.price === 'number' && !Number.isNaN(base.price)) {
+								priceCents = getPriceCents({ price: base.price as number });
+							}
+							return { id: base.id as string, title: base.title as string, slug: base.slug as string, qty, priceCents };
+						})
+						.filter(Boolean) as CartItem[];
+					setItems(normalized);
+				} else {
+					setItems([]);
+				}
+			} catch {
+				setItems([]);
+			}
+		}
+	}, []);
+	useEffect(() => localStorage.setItem("uco.cart", JSON.stringify(items)), [items]);
 
-  const add = useCallback((p: Product, qty: number = 1) => {
-    setItems((prev: CartItem[]) => {
-      const found = prev.find((i: CartItem) => i.id === p.id);
-      return found
-        ? prev.map((i: CartItem) => (i.id === p.id ? { ...i, qty: i.qty + qty } : i))
-        : [...prev, { id: p.id, title: p.title, price: p.price, qty, slug: p.slug }];
-    });
-    setOpen(true);
-  }, []);
+	function upsertItem(prev: CartItem[], p: Product, qty: number): CartItem[] {
+		const existingIndex = prev.findIndex(i => i.id === p.id);
+		if (existingIndex === -1) {
+			const priceCents = getPriceCents(p as unknown as { priceCents?: number; price?: number });
+			return [...prev, { id: p.id, title: p.title, priceCents, qty, slug: p.slug }];
+		}
+		const clone = [...prev];
+		const current = clone[existingIndex];
+		clone[existingIndex] = { ...current, qty: current.qty + qty };
+		return clone;
+	}
 
-  const remove = useCallback((id: string) => {
-    setItems((prev: CartItem[]) => prev.filter((i: CartItem) => i.id !== id));
-  }, []);
+	function removeItem(prev: CartItem[], id: string): CartItem[] {
+		return prev.filter(i => i.id !== id);
+	}
 
-  const clear = useCallback(() => setItems([]), []);
+	const count = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
+	const total = useMemo(() => items.reduce((sum, i) => sum + i.priceCents * i.qty, 0), [items]);
 
-  const count = useMemo(() => items.reduce((n: number, i: CartItem) => n + i.qty, 0), [items]);
-  const total = useMemo(() => items.reduce((sum: number, i: CartItem) => sum + i.price * i.qty, 0), [items]);
+	const api = useMemo<CartContext>(() => ({
+		items,
+		add: (p: Product, qty: number = 1) => {
+			setItems(prev => upsertItem(prev, p, qty));
+			setOpen(true);
+		},
+		remove: (id: string) => setItems(prev => removeItem(prev, id)),
+		clear: () => setItems([]),
+		open,
+		setOpen,
+		count,
+		total
+	}), [items, open, count, total]);
 
-  const api = useMemo<CartContext>(() => ({
-    items,
-    add,
-    remove,
-    clear,
-    open,
-    setOpen,
-    count,
-    total
-  }), [items, add, remove, clear, open, count, total]);
-
-  return React.createElement(Ctx.Provider, { value: api }, children);
+		return React.createElement(Ctx.Provider, { value: api }, children);
 }
-
 export function useCart() {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
-  return ctx;
+	const ctx = useContext(Ctx);
+	if (!ctx) throw new Error("useCart must be used within CartProvider");
+	return ctx;
 }

@@ -1,5 +1,5 @@
 "use client";
-import type { Product } from "@/types";
+import type { Product } from "@/types/product";
 import { useCart } from "@/hooks/useCart";
 
 export function AddToCartButton({ product }: { product: Product }) {
