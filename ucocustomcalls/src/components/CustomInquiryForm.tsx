@@ -24,6 +24,7 @@ export function CustomInquiryForm() {
         setStatus('error');
         return;
       }
+      // json.mailError means email dispatch failed but inquiry persisted; still show success.
       setStatus('success');
       form.reset();
     } catch (err) {

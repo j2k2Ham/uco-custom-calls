@@ -65,7 +65,8 @@ export async function POST(req: Request) {
 
   const mailResult = await sendInquiryMail({ name, email, message });
   if (!mailResult.ok) {
-    return NextResponse.json({ ok: false, error: 'email-failed' }, { status: 500 });
+    console.error('Email send failed', mailResult.error);
+    return NextResponse.json({ ok: true, mailError: true });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, mailError: false });
 }
