@@ -49,10 +49,14 @@ This project has been extended beyond the default template with tooling and util
 | ------ | ------- |
 | `npm run dev` | Start development server (Turbopack – experimental) |
 | `npm run dev:webpack` | Start development server (classic Webpack) |
-| `npm run build` | Production build (Turbopack) |
-| `npm run build:webpack` | Production build (classic Webpack) |
+| `npm run build` | Production build (classic Webpack default) |
+| `npm run build:webpack` | Production build (explicit classic) |
+| `npm run build:turbopack` | Production build (Turbopack – experimental) |
 | `npm start` | Run production build (latest build flavor) |
 | `npm run start:webpack` | Start classic Webpack production build |
+| `npm run build:ci` | CI production build (classic) |
+| `npm run diagnose:turbopack` | Attempt Turbopack build (non-blocking) |
+| `npm run verify:build` | Post-build health checks |
 | `npm run lint` | Run ESLint (Flat config + Next.js rules) |
 | `npm run lint:css` | Run Stylelint over global and module CSS |
 | `npm test` | Run Vitest once |
