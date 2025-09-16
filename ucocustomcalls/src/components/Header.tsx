@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "./Logo";
 import { ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { useCart } from "@/hooks/useCart";
 import { Nav } from "./Nav";
@@ -14,18 +13,7 @@ export function Header() {
     <>
       <header className="sticky top-0 z-50 backdrop-blur bg-camo/70 border-b border-camo-light">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label="UCO Custom Calls Home">
-            <Image
-              src="/images/company-logo-green-2x.png"
-              alt="UCO Custom Calls"
-              width={248}
-              height={140}
-              priority
-              sizes="(max-width: 640px) 160px, 200px"
-              className="h-8 w-auto object-contain"
-            />
-            <span className="sr-only">UCO Custom Calls</span>
-          </Link>
+          <Logo height={32} className="gap-2" />
           <Nav />
           <button
             aria-label="Open cart"
