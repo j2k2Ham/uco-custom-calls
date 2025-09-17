@@ -10,7 +10,7 @@ export const PRODUCTS: Product[] = [
     category: "duck",
     priceCents: 95_00,
     images: [
-      { src: "/images/woodie.jpg", alt: "Whiskey River Pintail", primary: true },
+      { src: "/images/wc.jpg", alt: "Whiskey River Pintail", primary: true },
       { src: "/images/whh.jpg", alt: "Whiskey River Pintail close" }
     ],
     badges: ["Acrylic", "Single Reed", "Handturned"],
@@ -47,7 +47,7 @@ export const PRODUCTS: Product[] = [
       "Durable paracord with brass finisher. Holds multiple calls, field-tested in PA winters.",
     category: "lanyards",
     priceCents: 35_00,
-  images: [{ src: "/images/uco-calls-1_orig.png", alt: "Paracord Lanyard", primary: true }],
+  images: [{ src: "/images/obla2.jpg", alt: "Paracord Lanyard", primary: true }],
     badges: ["Paracord", "Handmade"],
     features: ["Cold weather tested", "Multiple call drops", "Brass accent"],
     inStock: true

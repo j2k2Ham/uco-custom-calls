@@ -520,3 +520,60 @@ export default async function Page({ params }: ProductPageProps) {
 
 Sample product images reference existing assets in `public/images/` (e.g. `woodie.jpg`, `goose.jpg`). Replace with real catalog imagery as they become available. Avoid broken image requests to keep Playwright logs clean.
 
+### Performance & Lighthouse
+
+Modern image formats and deferred effects improve LCP and TTI:
+
+- Hero splash uses `<picture>` with AVIF → WebP → JPEG fallback + `fetchPriority="high"`.
+- Ambient decorative layers load dynamically after idle (`requestIdleCallback` fallback to timeout) and are skipped during tests.
+- Shimmer + blur placeholder provide perceived performance while decoding.
+
+Run ad‑hoc Lighthouse (dev server on :3000):
+
+```bash
+npm run lighthouse
+```
+
+CI JSON artifact:
+
+```bash
+npm run lighthouse:ci
+```
+
+Baseline workflow (mac/Linux):
+
+```bash
+npm run dev:webpack &
+sleep 5
+npm run lighthouse:ci
+cat .lighthouse/report.json | jq '.categories | {performance,seo,accessibility}'
+```
+
+PowerShell equivalent:
+
+```powershell
+npm run dev:webpack
+Start-Sleep -Seconds 5
+npm run lighthouse:ci
+Get-Content .lighthouse/report.json | jq '.categories | {performance,seo,accessibility}'
+```
+
+Future Optimizations:
+
+- Add responsive width variants (srcSet) for ultra-wide screens.
+- Preload hero image via `<link rel="preload" as="image">` if LCP persists >2.5s.
+- Integrate Lighthouse CI thresholds (e.g. perf >= 0.85) in GitHub Actions.
+- Inline minimal critical CSS if cumulative layout shift emerges.
+
+Troubleshooting:
+
+| Symptom | Cause | Mitigation |
+|---------|-------|-----------|
+| High LCP image time | Large asset | Recompress / add AVIF & WebP |
+| Layout shift after ambient load | Late inserted elements | Reserve space; avoid height changes |
+| Test act() warnings | Deferred state updates | Skipped ambient during tests (current solution) |
+
+Ambient Layers & Tests:
+
+`process.env.NODE_ENV === 'test'` guard prevents unnecessary dynamic animation work and noisy act warnings.
+

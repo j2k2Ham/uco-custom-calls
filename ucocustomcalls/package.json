@@ -32,6 +32,7 @@
     "e2e:report": "playwright show-report",
     "lighthouse": "npx lighthouse http://localhost:3000 --view --only-categories=performance,seo,accessibility,best-practices",
     "lighthouse:ci": "npx lighthouse http://localhost:3000 --quiet --output=json --output-path=./.lighthouse/report.json --only-categories=performance,seo",
+    "assets:unused": "node scripts/find-unused-images.mjs",
     "prepare": "husky install"
   },
   "dependencies": {
