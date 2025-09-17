@@ -25,10 +25,7 @@ export function AmbientLayers({ delay = 400 }: { delay?: number }) {
 
   if (!visible) return null;
   return (
-    <>
-      <div className="fog-layer pointer-events-none" aria-hidden />
-      <div className="birds-layer pointer-events-none" aria-hidden />
-    </>
+    <div className="fog-layer pointer-events-none" aria-hidden />
   );
 }
 
