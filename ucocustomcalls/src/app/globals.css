@@ -7,6 +7,8 @@
   --foreground: #171717;
   /* Brand palette */
   --color-camo: #1b2a1b; /* slightly greener */
+  --color-header: #122112; /* dedicated header tone for clarity */
+.bg-header { background-color: var(--color-header) !important; }
   --color-camo-light: #2a302a;
   --color-brass: #d2a857;
   --color-sky: #7aa6c9;
