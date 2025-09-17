@@ -2,6 +2,7 @@
 import Link from "next/link";
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 export function Nav() {
   const shopItems = [
@@ -9,39 +10,62 @@ export function Nav() {
     { href: "/category/goose", label: "Goose Calls" },
     { href: "/category/lanyards", label: "Paracord Lanyards" }
   ];
+  const huntingItems = [
+    { href: "/sound-files", label: "Sound Files" }
+  ];
   const otherLinks = [
     { href: "/custom", label: "Custom Calls" },
-    { href: "/sound-files", label: "Sound Files" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" }
   ];
-  const [open, setOpen] = React.useState(false);
+  const [openShop, setOpenShop] = React.useState(false);
+  const [openHunting, setOpenHunting] = React.useState(false);
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw || '';
-  const btnRef = React.useRef<HTMLButtonElement | null>(null);
-  const menuRef = React.useRef<HTMLUListElement | null>(null);
+  const shopBtnRef = React.useRef<HTMLButtonElement | null>(null);
+  const shopMenuRef = React.useRef<HTMLUListElement | null>(null);
+  const huntingBtnRef = React.useRef<HTMLButtonElement | null>(null);
+  const huntingMenuRef = React.useRef<HTMLUListElement | null>(null);
 
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (!open) return;
+      if (!openShop && !openHunting) return;
       if (e.key === 'Escape') {
-        setOpen(false);
-        btnRef.current?.focus();
+        if (openShop) {
+          setOpenShop(false);
+          shopBtnRef.current?.focus();
+        }
+        if (openHunting) {
+          setOpenHunting(false);
+          huntingBtnRef.current?.focus();
+        }
       }
     }
-    function onClick(e: MouseEvent) {
-      if (!open) return;
-      if (menuRef.current && !menuRef.current.contains(e.target as Node) && !btnRef.current?.contains(e.target as Node)) {
-        setOpen(false);
+    function onClick(e: MouseEvent | TouchEvent) {
+      if (openShop) {
+        if (shopMenuRef.current && !shopMenuRef.current.contains(e.target as Node) && !shopBtnRef.current?.contains(e.target as Node)) {
+          setOpenShop(false);
+        }
+      }
+      if (openHunting) {
+        if (huntingMenuRef.current && !huntingMenuRef.current.contains(e.target as Node) && !huntingBtnRef.current?.contains(e.target as Node)) {
+          setOpenHunting(false);
+        }
       }
     }
     window.addEventListener('keydown', onKey);
     window.addEventListener('mousedown', onClick);
+    window.addEventListener('touchstart', onClick);
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('mousedown', onClick);
+      window.removeEventListener('touchstart', onClick);
     };
-  }, [open]);
+  }, [openShop, openHunting]);
+
+  function Caret({ open }: { open: boolean }) {
+    return <ChevronDownIcon aria-hidden className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />;
+  }
 
   return (
     <nav aria-label="Primary">
@@ -55,34 +79,34 @@ export function Nav() {
         </li>
         <li className="relative" data-nav-shop>
           <button
-            ref={btnRef}
-            className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${open ? 'text-brass' : ''}`}
+            ref={shopBtnRef}
+            className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openShop ? 'text-brass' : ''}`}
             aria-haspopup="true"
-            aria-expanded={open}
-            onClick={() => setOpen(o => !o)}
+            aria-expanded={openShop}
+            onClick={() => setOpenShop(o => { const next = !o; if (next) setOpenHunting(false); return next; })}
             onKeyDown={e => {
               if (["ArrowDown","Enter"," "].includes(e.key)) {
                 e.preventDefault();
-                setOpen(true);
+                setOpenShop(true); setOpenHunting(false);
                 // focus first item next tick
                 requestAnimationFrame(() => {
-                  const first = menuRef.current?.querySelector('a');
+                  const first = shopMenuRef.current?.querySelector('a');
                   (first as HTMLElement | null)?.focus();
                 });
               }
             }}
           >
             Shop
-            <span aria-hidden className={`transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
+            <Caret open={openShop} />
           </button>
-          {open && (
+          {openShop && (
             <ul
-              ref={menuRef}
+              ref={shopMenuRef}
               role="menu"
               aria-label="Shop"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
             >
-              {shopItems.map((item, idx) => {
+              {shopItems.map((item) => {
                 const active = pathname.startsWith(item.href);
                 return (
                   <li key={item.href} role="none">
@@ -92,9 +116,9 @@ export function Nav() {
                       tabIndex={0}
                       className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
                       href={item.href}
-                      onClick={() => setOpen(false)}
+                      onClick={() => setOpenShop(false)}
                       onKeyDown={e => {
-                        const items = menuRef.current ? Array.from(menuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
+                        const items = shopMenuRef.current ? Array.from(shopMenuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
                         const idxCurrent = items.indexOf(e.currentTarget as HTMLElement);
                         if (e.key === 'ArrowDown') {
                           e.preventDefault();
@@ -111,15 +135,96 @@ export function Nav() {
                           e.preventDefault();
                           items[items.length - 1]?.focus();
                         } else if (e.key === 'Tab') {
-                          // Close if tabbing out of last item or shift-tabbing before first
-                          if (!e.shiftKey && idx === shopItems.length - 1) {
-                            setOpen(false);
-                          } else if (e.shiftKey && idx === 0) {
-                            setOpen(false);
+                          // Focus trap: cycle without closing
+                          e.preventDefault();
+                          if (e.shiftKey) {
+                            const prev = items[(idxCurrent - 1 + items.length) % items.length];
+                            prev?.focus();
+                          } else {
+                            const next = items[(idxCurrent + 1) % items.length];
+                            next?.focus();
                           }
                         } else if (e.key === 'Escape') {
-                          setOpen(false);
-                          btnRef.current?.focus();
+                          setOpenShop(false);
+                          shopBtnRef.current?.focus();
+                        }
+                      }}
+                    >{item.label}</Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </li>
+        <li className="relative" data-nav-hunting>
+          <button
+            ref={huntingBtnRef}
+            className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openHunting ? 'text-brass' : ''}`}
+            aria-haspopup="true"
+            aria-expanded={openHunting}
+            onClick={() => setOpenHunting(o => { const next = !o; if (next) setOpenShop(false); return next; })}
+            onKeyDown={e => {
+              if (["ArrowDown","Enter"," "].includes(e.key)) {
+                e.preventDefault();
+                setOpenHunting(true); setOpenShop(false);
+                requestAnimationFrame(() => {
+                  const first = huntingMenuRef.current?.querySelector('a');
+                  (first as HTMLElement | null)?.focus();
+                });
+              }
+            }}
+          >
+            Hunting
+            <Caret open={openHunting} />
+          </button>
+          {openHunting && (
+            <ul
+              ref={huntingMenuRef}
+              role="menu"
+              aria-label="Hunting"
+              className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
+            >
+              {huntingItems.map((item) => {
+                const active = pathname.startsWith(item.href);
+                return (
+                  <li key={item.href} role="none">
+                    <Link
+                      role="menuitem"
+                      aria-current={active ? 'page' : undefined}
+                      tabIndex={0}
+                      className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
+                      href={item.href}
+                      onClick={() => setOpenHunting(false)}
+                      onKeyDown={e => {
+                        const items = huntingMenuRef.current ? Array.from(huntingMenuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
+                        const idxCurrent = items.indexOf(e.currentTarget as HTMLElement);
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const next = items[(idxCurrent + 1) % items.length];
+                          next?.focus();
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const prev = items[(idxCurrent - 1 + items.length) % items.length];
+                          prev?.focus();
+                        } else if (e.key === 'Home') {
+                          e.preventDefault();
+                          items[0]?.focus();
+                        } else if (e.key === 'End') {
+                          e.preventDefault();
+                          items[items.length - 1]?.focus();
+                        } else if (e.key === 'Tab') {
+                          // Focus trap cycle
+                          e.preventDefault();
+                          if (e.shiftKey) {
+                            const prev = items[(idxCurrent - 1 + items.length) % items.length];
+                            prev?.focus();
+                          } else {
+                            const next = items[(idxCurrent + 1) % items.length];
+                            next?.focus();
+                          }
+                        } else if (e.key === 'Escape') {
+                          setOpenHunting(false);
+                          huntingBtnRef.current?.focus();
                         }
                       }}
                     >{item.label}</Link>

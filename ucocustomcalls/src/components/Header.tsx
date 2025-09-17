@@ -3,6 +3,7 @@
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { ShoppingBagIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { useCart } from "@/hooks/useCart";
 import { Nav } from "./Nav";
 import Link from 'next/link';
@@ -13,16 +14,22 @@ export function Header() {
   const { open, setOpen, count } = useCart();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [shopOpen, setShopOpen] = React.useState(false);
+  const [huntingOpen, setHuntingOpen] = React.useState(false);
 
   React.useEffect(() => {
     try {
       const s = localStorage.getItem('nav.shop');
       if (s === '1') setShopOpen(true);
+      const h = localStorage.getItem('nav.hunting');
+      if (h === '1') setHuntingOpen(true);
     } catch {}
   }, []);
   React.useEffect(() => {
     try { localStorage.setItem('nav.shop', shopOpen ? '1' : '0'); } catch {}
   }, [shopOpen]);
+  React.useEffect(() => {
+    try { localStorage.setItem('nav.hunting', huntingOpen ? '1' : '0'); } catch {}
+  }, [huntingOpen]);
 
   return (
     <>
@@ -64,10 +71,10 @@ export function Header() {
                   <button
                     className="w-full text-left py-2 flex items-center justify-between hover:text-brass"
                     aria-expanded={shopOpen}
-                    onClick={() => setShopOpen(o => !o)}
+                    onClick={() => setShopOpen(o => { const next = !o; if (next) setHuntingOpen(false); return next; })}
                   >
                     <span>Shop</span>
-                    <span className={`transition-transform ${shopOpen ? 'rotate-180' : ''}`}>▾</span>
+                    <ChevronDownIcon aria-hidden className={`w-4 h-4 transition-transform ${shopOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {shopOpen && (
                     <ul className="ml-4 mt-1 border-l border-camo-light pl-4 flex flex-col gap-1">
@@ -77,8 +84,22 @@ export function Header() {
                     </ul>
                   )}
                 </li>
+                <li>
+                  <button
+                    className="w-full text-left py-2 flex items-center justify-between hover:text-brass"
+                    aria-expanded={huntingOpen}
+                    onClick={() => setHuntingOpen(o => { const next = !o; if (next) setShopOpen(false); return next; })}
+                  >
+                    <span>Hunting</span>
+                    <ChevronDownIcon aria-hidden className={`w-4 h-4 transition-transform ${huntingOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {huntingOpen && (
+                    <ul className="ml-4 mt-1 border-l border-camo-light pl-4 flex flex-col gap-1">
+                      <li><Link className="hover:text-brass py-1" href="/sound-files" onClick={() => setMobileOpen(false)}>Sound Files</Link></li>
+                    </ul>
+                  )}
+                </li>
                 <li><Link className="py-2 hover:text-brass" href="/custom" onClick={() => setMobileOpen(false)}>Custom Calls</Link></li>
-                <li><Link className="py-2 hover:text-brass" href="/sound-files" onClick={() => setMobileOpen(false)}>Sound Files</Link></li>
                 <li><Link className="py-2 hover:text-brass" href="/about" onClick={() => setMobileOpen(false)}>About</Link></li>
                 <li><Link className="py-2 hover:text-brass" href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link></li>
               </ul>
