@@ -59,6 +59,7 @@ export function Header() {
           <div className="md:hidden border-t border-camo-light px-4 pb-4 animate-slideDown">
             <nav aria-label="Mobile" className="mt-3">
               <ul className="flex flex-col gap-2">
+                <li><Link className="py-2 hover:text-brass" href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
                 <li>
                   <button
                     className="w-full text-left py-2 flex items-center justify-between hover:text-brass"

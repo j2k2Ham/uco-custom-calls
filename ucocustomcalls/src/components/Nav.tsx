@@ -46,6 +46,13 @@ export function Nav() {
   return (
     <nav aria-label="Primary">
       <ul className="hidden md:flex gap-6 items-center">
+        <li>
+          <Link
+            href="/"
+            className={`hover:text-brass focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${pathname === '/' ? 'text-brass' : ''}`}
+            aria-current={pathname === '/' ? 'page' : undefined}
+          >Home</Link>
+        </li>
         <li className="relative" data-nav-shop>
           <button
             ref={btnRef}
