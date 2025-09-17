@@ -7,9 +7,11 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <section className="mx-auto max-w-6xl px-4 py-10">
+      <section className="featured-bg border-t border-camo-light/40">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
         <h2 className="text-2xl font-semibold mb-4">Featured</h2>
         <ProductGrid products={featured} />
+        </div>
       </section>
     </>
   );

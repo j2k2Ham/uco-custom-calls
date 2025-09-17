@@ -28,6 +28,29 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Splash hero heading style approximation */
+.hero-heading {
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  /* Simulated outline */
+  text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 0 18px rgba(0,0,0,.45);
+}
+
+/* Background texture (reuse existing image as subtle overlay) */
+.featured-bg {
+  position: relative;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent 60%),
+    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+    url('/images/splash-page.jpg');
+  background-size: cover;
+  background-position: center;
+}
+@media (min-width: 768px) {
+  .featured-bg { background-attachment: fixed; }
+}
+
 /* (Removed experimental nav-link component classes to restore original rendering) */
 
 /* Brand utility classes (fallback if tailwind config missing) */
