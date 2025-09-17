@@ -1,6 +1,7 @@
 "use client";
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useUser } from './useUser';
 import type { Product } from "@/types/product";
 import { getPriceCents } from "@/types/product";
 
@@ -18,11 +19,13 @@ type CartContext = {
 const Ctx = createContext<CartContext | null>(null);
 
 export function CartProvider({ children }: Readonly<{ children: React.ReactNode }>) {
+	const { user } = useUser();
 	const [items, setItems] = useState<CartItem[]>([]);
 	const [open, setOpen] = useState(false);
 
+	const storageKey = user ? `uco.cart.${user.id}` : 'uco.cart.guest';
 	useEffect(() => {
-		const raw = localStorage.getItem("uco.cart");
+		const raw = localStorage.getItem(storageKey);
 		if (raw) {
 			try {
 				type UnknownItem = { priceCents?: number; price?: number; [k: string]: unknown };
@@ -42,15 +45,13 @@ export function CartProvider({ children }: Readonly<{ children: React.ReactNode 
 						})
 						.filter(Boolean) as CartItem[];
 					setItems(normalized);
-				} else {
-					setItems([]);
 				}
 			} catch {
-				setItems([]);
+				/* ignore parse errors */
 			}
 		}
-	}, []);
-	useEffect(() => localStorage.setItem("uco.cart", JSON.stringify(items)), [items]);
+	}, [storageKey]);
+	useEffect(() => localStorage.setItem(storageKey, JSON.stringify(items)), [items, storageKey]);
 
 	function upsertItem(prev: CartItem[], p: Product, qty: number): CartItem[] {
 		const existingIndex = prev.findIndex(i => i.id === p.id);

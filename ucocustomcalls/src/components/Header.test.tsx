@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
 import { CartProvider } from '@/hooks/useCart';
+import { UserProvider } from '@/hooks/useUser';
 import React from 'react';
 import { vi } from 'vitest';
 
@@ -11,9 +12,11 @@ vi.mock('./CartDrawer', () => ({
 
 function Wrapper() {
   return (
-    <CartProvider>
-      <Header />
-    </CartProvider>
+    <UserProvider>
+      <CartProvider>
+        <Header />
+      </CartProvider>
+    </UserProvider>
   );
 }
 

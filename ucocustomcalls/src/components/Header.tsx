@@ -3,6 +3,7 @@
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { ShoppingBagIcon } from "@heroicons/react/24/outline";
+import { ProfileMenu } from './ProfileMenu';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { useCart } from "@/hooks/useCart";
 import { Nav } from "./Nav";
@@ -44,6 +45,7 @@ export function Header() {
             <Nav />
           </div>
           <ThemeToggle className="mr-2" />
+          <ProfileMenu />
           <button
             aria-label="Open cart"
             onClick={() => setOpen(true)}

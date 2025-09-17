@@ -68,9 +68,11 @@ describe('Nav keyboard & persistence', () => {
     // reopen
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
-  menu = await screen.findByRole('menu', { name: /shop/i });
+    menu = await screen.findByRole('menu', { name: /shop/i });
     items = Array.from(menu.querySelectorAll('a')) as HTMLElement[];
-    expect(document.activeElement?.getAttribute('href')).toBe(second.getAttribute('href'));
+    await waitFor(() => {
+      expect(document.activeElement?.getAttribute('href')).toBe(second.getAttribute('href'));
+    });
   });
 
   it('stores dropdown open state and restores it (desktop width)', () => {

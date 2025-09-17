@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { organizationJsonLD } from '@/lib/structuredData';
 import type { Metadata } from "next";
 import { CartProvider } from "@/hooks/useCart";
+import { UserProvider } from '@/hooks/useUser';
 import React from "react";
 
 export const metadata: Metadata = {
@@ -43,24 +44,26 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className="bg-camo text-white">
       <body className="min-h-screen flex flex-col">
         {profiler(
-          <CartProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <script
-              type="application/ld+json"
-              suppressHydrationWarning
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLD({
-                name: 'UCO Custom Calls',
-                description: 'Handcrafted duck & goose calls and custom paracord lanyards made in Pennsylvania.',
-                logo: '/images/company-logo-green-2x.png',
-                sameAs: [
-                  'https://www.facebook.com/Ucoutfitters/',
-                  'https://www.instagram.com/ucocustomcalls/'
-                ]
-              })) }}
-            />
-          </CartProvider>
+          <UserProvider>
+            <CartProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <script
+                type="application/ld+json"
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLD({
+                  name: 'UCO Custom Calls',
+                  description: 'Handcrafted duck & goose calls and custom paracord lanyards made in Pennsylvania.',
+                  logo: '/images/company-logo-green-2x.png',
+                  sameAs: [
+                    'https://www.facebook.com/Ucoutfitters/',
+                    'https://www.instagram.com/ucocustomcalls/'
+                  ]
+                })) }}
+              />
+            </CartProvider>
+          </UserProvider>
         )}
       </body>
     </html>
