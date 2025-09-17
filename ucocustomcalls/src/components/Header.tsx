@@ -26,7 +26,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 backdrop-blur bg-camo/70 border-b border-camo-light">
+  <header className="sticky top-0 z-50 backdrop-blur bg-camo/80 border-b border-camo-light">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
           <button
             className="md:hidden p-2 rounded hover:bg-camo-light"

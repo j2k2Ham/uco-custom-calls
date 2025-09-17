@@ -12,7 +12,7 @@ export function Hero() {
             Tuned by waterfowlers, field-tested in Pennsylvania winters.
           </p>
           <div className="mt-6 flex gap-3">
-            <Link href="/category/duck" className="px-4 py-2 bg-brass text-black rounded-md">Shop Duck</Link>
+            <Link href="/category/duck" className="px-4 py-2 bg-brass text-black rounded-md shadow-sm shadow-black/30 hover:shadow-md">Shop Duck</Link>
             <Link href="/category/goose" className="px-4 py-2 border border-brass rounded-md">Shop Goose</Link>
           </div>
         </div>
