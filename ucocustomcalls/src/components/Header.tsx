@@ -9,6 +9,7 @@ import { Nav } from "./Nav";
 import Link from 'next/link';
 import React from 'react';
 import { CartDrawer } from "./CartDrawer";
+import { NavStorageKey, getStored, setStored } from '@/lib/navStorage';
 
 export function Header() {
   const { open, setOpen, count } = useCart();
@@ -17,19 +18,13 @@ export function Header() {
   const [huntingOpen, setHuntingOpen] = React.useState(false);
 
   React.useEffect(() => {
-    try {
-      const s = localStorage.getItem('nav.shop');
-      if (s === '1') setShopOpen(true);
-      const h = localStorage.getItem('nav.hunting');
-      if (h === '1') setHuntingOpen(true);
-    } catch {}
+    const s = getStored(NavStorageKey.ShopOpen);
+    if (s === '1') setShopOpen(true);
+    const h = getStored(NavStorageKey.HuntingOpen);
+    if (h === '1') setHuntingOpen(true);
   }, []);
-  React.useEffect(() => {
-    try { localStorage.setItem('nav.shop', shopOpen ? '1' : '0'); } catch {}
-  }, [shopOpen]);
-  React.useEffect(() => {
-    try { localStorage.setItem('nav.hunting', huntingOpen ? '1' : '0'); } catch {}
-  }, [huntingOpen]);
+  React.useEffect(() => { setStored(NavStorageKey.ShopOpen, shopOpen ? '1' : '0'); }, [shopOpen]);
+  React.useEffect(() => { setStored(NavStorageKey.HuntingOpen, huntingOpen ? '1' : '0'); }, [huntingOpen]);
 
   return (
     <>

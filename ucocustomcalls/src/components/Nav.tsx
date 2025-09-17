@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { NavStorageKey, getStored, setStored } from '@/lib/navStorage';
 
 export function Nav() {
   const shopItems = [
@@ -31,12 +32,15 @@ export function Nav() {
 
   // Restore last focused items if paths still present
   React.useEffect(() => {
-    try {
-      const s = localStorage.getItem('nav.last.shop');
-      if (s) lastShopItemRef.current = s;
-      const h = localStorage.getItem('nav.last.hunting');
-      if (h) lastHuntingItemRef.current = h;
-    } catch {}
+    const s = getStored(NavStorageKey.LastShopItem);
+    if (s) lastShopItemRef.current = s;
+    const h = getStored(NavStorageKey.LastHuntingItem);
+    if (h) lastHuntingItemRef.current = h;
+    // restore open states for desktop only
+    const so = getStored(NavStorageKey.ShopOpen);
+    if (so === '1' && window.innerWidth >= 768) setOpenShop(true);
+    const ho = getStored(NavStorageKey.HuntingOpen);
+    if (ho === '1' && window.innerWidth >= 768) setOpenHunting(true);
   }, []);
 
   React.useEffect(() => {
@@ -89,21 +93,23 @@ export function Nav() {
 
   return (
     <nav aria-label="Primary">
-      <ul className="hidden md:flex gap-6 items-center">
-        <li>
+      <ul className="hidden md:flex gap-6 items-center" role="menubar" aria-label="Main menu">
+        <li role="none">
           <Link
+            role="menuitem"
             href="/"
             className={`hover:text-brass focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${pathname === '/' ? 'text-brass' : ''}`}
             aria-current={pathname === '/' ? 'page' : undefined}
           >Home</Link>
         </li>
-        <li className="relative" data-nav-shop>
+        <li className="relative" data-nav-shop role="none">
           <button
             ref={shopBtnRef}
             className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openShop ? 'text-brass' : ''}`}
             aria-haspopup="true"
             aria-expanded={openShop}
-            onClick={() => setOpenShop(o => { const next = !o; if (next) { setOpenHunting(false); } return next; })}
+            role="menuitem"
+            onClick={() => setOpenShop(o => { const next = !o; if (next) { setOpenHunting(false); } setStored(NavStorageKey.ShopOpen, next ? '1' : '0'); return next; })}
             onKeyDown={e => {
               if (["ArrowDown","Enter"," "].includes(e.key)) {
                 e.preventDefault();
@@ -144,7 +150,7 @@ export function Nav() {
                       tabIndex={0}
                       className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
                       href={item.href}
-                      onClick={() => { setOpenShop(false); lastShopItemRef.current = item.href; try { localStorage.setItem('nav.last.shop', item.href); } catch {} }}
+                      onClick={() => { setOpenShop(false); lastShopItemRef.current = item.href; setStored(NavStorageKey.LastShopItem, item.href); }}
                       onKeyDown={e => {
                         const items = shopMenuRef.current ? Array.from(shopMenuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
                         const idxCurrent = items.indexOf(e.currentTarget as HTMLElement);
@@ -190,13 +196,14 @@ export function Nav() {
             </ul>
           )}
         </li>
-        <li className="relative" data-nav-hunting>
+        <li className="relative" data-nav-hunting role="none">
           <button
             ref={huntingBtnRef}
             className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openHunting ? 'text-brass' : ''}`}
             aria-haspopup="true"
             aria-expanded={openHunting}
-            onClick={() => setOpenHunting(o => { const next = !o; if (next) { setOpenShop(false); } return next; })}
+            role="menuitem"
+            onClick={() => setOpenHunting(o => { const next = !o; if (next) { setOpenShop(false); } setStored(NavStorageKey.HuntingOpen, next ? '1' : '0'); return next; })}
             onKeyDown={e => {
               if (["ArrowDown","Enter"," "].includes(e.key)) {
                 e.preventDefault();
@@ -236,7 +243,7 @@ export function Nav() {
                       tabIndex={0}
                       className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
                       href={item.href}
-                      onClick={() => { setOpenHunting(false); lastHuntingItemRef.current = item.href; try { localStorage.setItem('nav.last.hunting', item.href); } catch {} }}
+                      onClick={() => { setOpenHunting(false); lastHuntingItemRef.current = item.href; setStored(NavStorageKey.LastHuntingItem, item.href); }}
                       onKeyDown={e => {
                         const items = huntingMenuRef.current ? Array.from(huntingMenuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
                         const idxCurrent = items.indexOf(e.currentTarget as HTMLElement);
@@ -285,8 +292,9 @@ export function Nav() {
         {otherLinks.map(l => {
           const active = pathname.startsWith(l.href);
           return (
-            <li key={l.href}>
+            <li key={l.href} role="none">
               <Link
+                role="menuitem"
                 className={`hover:text-brass focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${active ? 'text-brass' : ''}`}
                 aria-current={active ? 'page' : undefined}
                 href={l.href}
