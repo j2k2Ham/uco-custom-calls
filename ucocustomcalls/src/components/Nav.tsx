@@ -90,7 +90,7 @@ export function Nav() {
                       role="menuitem"
                       aria-current={active ? 'page' : undefined}
                       tabIndex={0}
-                      className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm ${active ? 'text-brass' : ''} hover:bg-camo-light focus:bg-camo-light`}
+                      className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
                       href={item.href}
                       onClick={() => setOpen(false)}
                       onKeyDown={e => {

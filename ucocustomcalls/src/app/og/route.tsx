@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { strongEtag } from '../../lib/etag';
 
 export const runtime = 'edge';
 export const alt = 'UCO Custom Calls';
@@ -19,11 +20,21 @@ export async function GET(req: Request) {
   } else {
     rec.count++;
     if (rec.count > MAX_PER_WINDOW) {
+      if (process.env.NEXT_PUBLIC_LOG_RATE_LIMIT === '1') {
+        console.warn(`[og] rate limit exceeded ip=${ip} count=${rec.count}`);
+      }
       return new Response('Rate limit exceeded', { status: 429 });
     }
   }
   const title = (searchParams.get('title') || 'UCO Custom Calls').slice(0, 80);
-  return new ImageResponse(
+  // Simple ETag: hash based on title length + contents
+  // Use strong (truncated) hash for better collision resistance
+  const etag = await strongEtag('og:' + title);
+  const ifNoneMatch = req.headers.get('if-none-match');
+  if (ifNoneMatch === etag) {
+    return new Response(null, { status: 304, headers: { ETag: etag } });
+  }
+  const image = new ImageResponse(
     (
       <div
         style={{
@@ -45,4 +56,11 @@ export async function GET(req: Request) {
     ),
     { width: 1200, height: 630 }
   );
+  return new Response(image.body, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
+      , 'ETag': etag
+    }
+  });
 }

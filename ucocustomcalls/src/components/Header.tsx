@@ -71,9 +71,9 @@ export function Header() {
                   </button>
                   {shopOpen && (
                     <ul className="ml-4 mt-1 border-l border-camo-light pl-4 flex flex-col gap-1">
-                      <li><Link className="hover:text-brass" href="/category/duck" onClick={() => setMobileOpen(false)}>Duck Calls</Link></li>
-                      <li><Link className="hover:text-brass" href="/category/goose" onClick={() => setMobileOpen(false)}>Goose Calls</Link></li>
-                      <li><Link className="hover:text-brass" href="/category/lanyards" onClick={() => setMobileOpen(false)}>Paracord Lanyards</Link></li>
+                      <li><Link className="hover:text-brass py-1" href="/category/duck" onClick={() => setMobileOpen(false)}>Duck Calls</Link></li>
+                      <li><Link className="hover:text-brass py-1" href="/category/goose" onClick={() => setMobileOpen(false)}>Goose Calls</Link></li>
+                      <li><Link className="hover:text-brass py-1" href="/category/lanyards" onClick={() => setMobileOpen(false)}>Paracord Lanyards</Link></li>
                     </ul>
                   )}
                 </li>

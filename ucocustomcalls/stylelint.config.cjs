@@ -1,6 +1,7 @@
 module.exports = {
   extends: [
-    'stylelint-config-standard'
+    'stylelint-config-standard',
+    'stylelint-config-standard-scss'
   ],
   ignoreFiles: [
     '**/node_modules/**',
@@ -19,6 +20,7 @@ module.exports = {
     'custom-property-empty-line-before': null,
     'comment-empty-line-before': null,
     'rule-empty-line-before': null,
-    'color-hex-length': 'short'
+    'color-hex-length': 'short',
+    'selector-class-pattern': null
   }
 };
