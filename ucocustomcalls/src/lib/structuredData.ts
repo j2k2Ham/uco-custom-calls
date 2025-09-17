@@ -109,3 +109,15 @@ export function aboutPageJsonLD(opts: { name: string; description: string; url?:
     image: (opts.imageUrls || []).map(src => (src.startsWith('http') ? src : BASE_URL + src))
   };
 }
+
+export function organizationJsonLD(opts: { name: string; url?: string; logo?: string; sameAs?: string[]; description?: string }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: opts.name,
+    url: opts.url || BASE_URL + '/',
+    logo: opts.logo ? (opts.logo.startsWith('http') ? opts.logo : BASE_URL + opts.logo) : undefined,
+    description: opts.description,
+    sameAs: opts.sameAs && opts.sameAs.length ? opts.sameAs : undefined
+  };
+}

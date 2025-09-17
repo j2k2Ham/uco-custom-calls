@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { organizationJsonLD } from '@/lib/structuredData';
 import type { Metadata } from "next";
 import { CartProvider } from "@/hooks/useCart";
 import React from "react";
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
     type: "website",
     title: "UCO Custom Calls",
     siteName: "UCO Custom Calls",
-  images: [{ url: "/og-base.svg", width: 1200, height: 630, alt: "UCO Custom Calls" }]
+    url: 'https://www.ucocustomcalls.com/',
+    locale: 'en_US',
+    description: 'Handcrafted duck and goose calls made in Pennsylvania. Acrylic single/double reed and custom paracord lanyards.',
+    images: [{ url: "/og-base.svg", width: 1200, height: 630, alt: "UCO Custom Calls" }]
   },
   twitter: {
     card: 'summary_large_image',
@@ -43,6 +47,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
+            <script
+              type="application/ld+json"
+              suppressHydrationWarning
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLD({
+                name: 'UCO Custom Calls',
+                description: 'Handcrafted duck & goose calls and custom paracord lanyards made in Pennsylvania.',
+                logo: '/images/company-logo-green-2x.png',
+                sameAs: [
+                  'https://www.facebook.com/Ucoutfitters/',
+                  'https://www.instagram.com/ucocustomcalls/'
+                ]
+              })) }}
+            />
           </CartProvider>
         )}
       </body>
