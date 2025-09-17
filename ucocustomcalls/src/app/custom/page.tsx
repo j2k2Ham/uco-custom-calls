@@ -2,9 +2,13 @@ import { CustomInquiryForm } from '@/components/CustomInquiryForm';
 import { contactPageJsonLD } from '@/lib/structuredData';
 import type { Metadata } from 'next';
 
+const customTitle = 'Custom Calls & Lanyards Inquiry | UCO Custom Calls';
+const customDescription = 'Request custom acrylic duck & goose calls or paracord lanyards. Colorways, engravings, reeds & more.';
 export const metadata: Metadata = {
-  title: 'Custom Calls & Lanyards Inquiry | UCO Custom Calls',
-  description: 'Request custom acrylic duck & goose calls or paracord lanyards. Colorways, engravings, reeds & more.'
+  title: customTitle,
+  description: customDescription,
+  openGraph: { type: 'website', title: customTitle, description: customDescription, url: 'https://ucocustomcalls.com/custom' },
+  twitter: { card: 'summary', title: customTitle, description: customDescription }
 };
 
 export default function CustomPage() {

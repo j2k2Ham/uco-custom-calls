@@ -16,7 +16,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: "UCO Custom Calls",
-    siteName: "UCO Custom Calls"
+    siteName: "UCO Custom Calls",
+  images: [{ url: "/og-base.svg", width: 1200, height: 630, alt: "UCO Custom Calls" }]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'UCO Custom Calls',
+    description: 'Handcrafted duck and goose calls made in Pennsylvania. Acrylic single/double reed and custom paracord lanyards.'
   },
   alternates: { canonical: "/" }
 };

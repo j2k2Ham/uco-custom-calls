@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 import { PRODUCTS, CATEGORIES } from "@/lib/products";
 import { categoryUrl, productsListingUrl } from '@/lib/urls';
+import { breadcrumbJsonLD } from '@/lib/structuredData';
 import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryNav } from "@/components/CategoryNav";
 
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     title,
     description,
     openGraph: { title, description, type: 'website', url: categoryUrl(category.handle) },
+    twitter: { card: 'summary', title, description },
     alternates: { canonical: `/category/${category.handle}` }
   };
 }
@@ -32,14 +34,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Products', item: productsListingUrl() },
-              { '@type': 'ListItem', position: 2, name: category.name, item: categoryUrl(category.handle) }
-            ]
-          })
+          __html: JSON.stringify(breadcrumbJsonLD([
+            { name: 'Products', url: productsListingUrl() },
+            { name: category.name, url: categoryUrl(category.handle) }
+          ]))
         }}
       />
       <CategoryNav />

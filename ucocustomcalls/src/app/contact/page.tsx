@@ -2,9 +2,13 @@ import { CustomInquiryForm } from '@/components/CustomInquiryForm';
 import { contactPageJsonLD } from '@/lib/structuredData';
 import type { Metadata } from 'next';
 
+const contactTitle = 'Contact Us | UCO Custom Calls';
+const contactDescription = "How can we help you? We're here to help.";
 export const metadata: Metadata = {
-  title: 'Contact Us | UCO Custom Calls',
-  description: "How can we help you? We're here to help.",
+  title: contactTitle,
+  description: contactDescription,
+  openGraph: { type: 'website', title: contactTitle, description: contactDescription, url: 'https://ucocustomcalls.com/contact' },
+  twitter: { card: 'summary', title: contactTitle, description: contactDescription }
 };
 
 export default function ContactPage() {

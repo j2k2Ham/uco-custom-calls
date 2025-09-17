@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PRODUCTS } from "@/lib/products";
 import { productUrl, categoryUrl, productsListingUrl } from '@/lib/urls';
+import { productJsonLD, breadcrumbJsonLD } from '@/lib/structuredData';
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { formatPriceFromCents, getPriceCents } from "@/types/product";
@@ -29,6 +30,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       images,
       url: productUrl(product.slug)
     },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description
+    },
     alternates: { canonical: `/products/${product.slug}` }
   };
 }
@@ -44,48 +50,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify((() => {
-            const base: Record<string, unknown> = {
-              '@context': 'https://schema.org/',
-              '@type': 'Product',
-              name: product.title,
-              description: product.description,
-              image: product.images.map(i => i.src),
-              sku: product.id,
-              offers: {
-                '@type': 'Offer',
-                availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-                priceCurrency: 'USD',
-                price: (getPriceCents(product) / 100).toFixed(2),
-                url: productUrl(product.slug),
-                itemCondition: 'https://schema.org/NewCondition'
-              }
-            };
-            if (typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number') {
-              base.aggregateRating = {
-                '@type': 'AggregateRating',
-                ratingValue: product.ratingValue,
-                reviewCount: product.ratingCount,
-                bestRating: product.ratingBest ?? 5
-              };
-            }
-            return base;
-          })())
+          __html: JSON.stringify(productJsonLD({
+            name: product.title,
+            description: product.description,
+            sku: product.id,
+            image: product.images[0]?.src || '',
+            priceCents: getPriceCents(product),
+            availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: productUrl(product.slug),
+            ratingValue: product.ratingValue,
+            ratingCount: product.ratingCount,
+            ratingBest: product.ratingBest
+          }))
         }}
       />
       <script
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Products', item: productsListingUrl() },
-              { '@type': 'ListItem', position: 2, name: product.category, item: categoryUrl(product.category) },
-              { '@type': 'ListItem', position: 3, name: product.title, item: productUrl(product.slug) }
-            ]
-          })
+          __html: JSON.stringify(breadcrumbJsonLD([
+            { name: 'Products', url: productsListingUrl() },
+            { name: product.category, url: categoryUrl(product.category) },
+            { name: product.title, url: productUrl(product.slug) }
+          ]))
         }}
       />
       <div><ProductGallery product={product} /></div>

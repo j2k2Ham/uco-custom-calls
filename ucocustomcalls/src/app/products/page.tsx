@@ -1,18 +1,17 @@
 import { PRODUCTS } from '@/lib/products';
 import { productsListingUrl } from '@/lib/urls';
+import { breadcrumbJsonLD } from '@/lib/structuredData';
 import { ProductGrid } from '@/components/ProductGrid';
 import { CategoryNav } from '@/components/CategoryNav';
 import type { Metadata } from 'next';
 
+const title = 'All Products | UCO Custom Calls';
+const description = 'Browse all handcrafted duck & goose calls, lanyards and accessories from UCO Custom Calls.';
 export const metadata: Metadata = {
-  title: 'All Products | UCO Custom Calls',
-  description: 'Browse all handcrafted duck & goose calls, lanyards and accessories from UCO Custom Calls.' ,
-  openGraph: {
-    type: 'website',
-    title: 'All Products | UCO Custom Calls',
-    description: 'Browse all handcrafted duck & goose calls, lanyards and accessories from UCO Custom Calls.',
-    url: 'https://ucocustomcalls.com/products'
-  },
+  title,
+  description,
+  openGraph: { type: 'website', title, description, url: 'https://ucocustomcalls.com/products' },
+  twitter: { card: 'summary', title, description },
   alternates: { canonical: '/products' }
 };
 
@@ -23,13 +22,9 @@ export default function ProductsPage() {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Products', item: productsListingUrl() }
-            ]
-          })
+          __html: JSON.stringify(breadcrumbJsonLD([
+            { name: 'Products', url: productsListingUrl() }
+          ]))
         }}
       />
       <header className="flex flex-col gap-4">
