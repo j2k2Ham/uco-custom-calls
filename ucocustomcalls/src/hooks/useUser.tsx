@@ -13,6 +13,7 @@ interface UserContextShape {
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   loginWithProvider: (provider: 'google' | 'facebook') => Promise<User>;
+  createAccount: (data: { firstName: string; lastName: string; email: string; password: string }) => Promise<User>;
   logout: () => void;
 }
 
@@ -66,7 +67,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser(null); persist(null);
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, loginWithProvider, logout }), [user, loading, login, loginWithProvider, logout]);
+  const createAccount = useCallback(async ({ firstName, lastName, email, password }: { firstName: string; lastName: string; email: string; password: string }): Promise<User> => {
+    setLoading(true);
+    if (!SKIP_DELAY) await fakeDelay(350);
+    if (!firstName.trim() || !lastName.trim()) { setLoading(false); throw new Error('Name required'); }
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { setLoading(false); throw new Error('Invalid email'); }
+    if (password.length < 6) { setLoading(false); throw new Error('Password too short'); }
+    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
+    const next: User = { id: `u_${btoa(email)}`, email, name, provider: 'local' };
+    setUser(next); persist(next); setLoading(false); return next;
+  }, []);
+
+  const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout }), [user, loading, login, loginWithProvider, createAccount, logout]);
 
   return <UserCtx.Provider value={value}>{children}</UserCtx.Provider>;
 }
