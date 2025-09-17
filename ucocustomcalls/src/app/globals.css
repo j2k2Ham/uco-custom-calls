@@ -125,3 +125,11 @@ body {
 .highlight-card p { font-size:.9rem; line-height:1.35; color:var(--color-sky-80); }
 .highlight-card::after { content:""; position:absolute; inset:0; background:linear-gradient(130deg, rgba(255,255,255,0.06), transparent 55%); mix-blend-mode:overlay; pointer-events:none; }
 .highlight-icon { width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:0.65rem; background:rgba(255,255,255,0.08); margin-bottom:.6rem; }
+
+/* Fade-in utility */
+.fade-in { opacity:0; transform:translateY(12px); animation: fadeInUp .7s cubic-bezier(.25,.6,.3,1) forwards; }
+@keyframes fadeInUp { to { opacity:1; transform:translateY(0); } }
+
+/* Shimmer placeholder */
+.shimmer { position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.16), rgba(255,255,255,0.08)); background-size:200% 100%; animation: shimmerMove 2.2s linear infinite; }
+@keyframes shimmerMove { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }

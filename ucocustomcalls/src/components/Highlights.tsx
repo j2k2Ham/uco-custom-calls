@@ -1,3 +1,6 @@
+"use client";
+import React from 'react';
+
 export function Highlights() {
   const items = [
     {
@@ -22,11 +25,37 @@ export function Highlights() {
       body: 'Colorways, engraving, and tuning tailored to how—and where—you hunt.'
     }
   ];
+  const refs = React.useRef<HTMLDivElement[]>([]);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('fade-in');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+    refs.current.forEach(el => el && observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className="mx-auto max-w-6xl px-4 -mt-12 relative z-10">
       <div className="highlight-grid">
-        {items.map(i => (
-          <div key={i.title} className="highlight-card">
+        {items.map((i, index) => (
+          <div
+            key={i.title}
+            ref={el => {
+              if (el) refs.current[index] = el;
+            }}
+            className="highlight-card opacity-0"
+            style={{ animationDelay: `${index * 90}ms` }}
+          >
             <div className="highlight-icon text-brass/90">{i.icon}</div>
             <h3>{i.title}</h3>
             <p>{i.body}</p>
