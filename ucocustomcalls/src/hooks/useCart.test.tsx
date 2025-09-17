@@ -9,11 +9,6 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('useCart', () => {
-  beforeEach(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-    }
-  });
   it('adds an item and increments count and total', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     act(() => {

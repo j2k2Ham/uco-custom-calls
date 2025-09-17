@@ -40,6 +40,16 @@ Basic a11y smoke tests (axe) are included. Micro-benchmarks for utility function
 npm run test:bench
 ```
 
+#### Fast Test Runs (Disabling Axe)
+
+You can disable axe analysis (useful for quick iteration) by setting an environment variable before running tests:
+
+```bash
+AXE_DISABLED=1 npm test
+```
+
+When disabled, a stub returns an empty result set. Keep at least one CI job with axe enabled to avoid regressions.
+
 ### Profiler
 
 Set `NEXT_PUBLIC_PROFILE=1` before running dev to wrap the App in a React Profiler for render timing diagnostics.

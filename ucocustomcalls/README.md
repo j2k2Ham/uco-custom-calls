@@ -271,6 +271,16 @@ Adjusting Thresholds:
 
 Audio components include `<track>` elements for captions. A placeholder WebVTT file lives at `public/captions/blank.vtt` and can be replaced with real transcripts.
 
+#### Skipping Axe in Local Runs
+
+Set `AXE_DISABLED=1` (Unix) or `$env:AXE_DISABLED='1'` (PowerShell) to bypass axe-core checks via a lightweight stub for faster iteration:
+
+```bash
+AXE_DISABLED=1 npm test
+```
+
+Keep axe enabled in CI for at least one job so accessibility regressions surface.
+
 ### Future Enhancements (Ideas)
 
 - Quantity decrement vs full remove
