@@ -2,17 +2,14 @@
 import Link from "next/link";
 import Image from 'next/image';
 import React from 'react';
+import dynamic from 'next/dynamic';
+
+const AmbientLayers = dynamic(() => import('./AmbientLayers').then(m => m.AmbientLayers), {
+  ssr: false,
+});
 
 export function Hero() {
   const [loaded, setLoaded] = React.useState(false);
-  const [showAmbient, setShowAmbient] = React.useState(false);
-
-  React.useEffect(() => {
-    if (loaded) {
-      const t = setTimeout(() => setShowAmbient(true), 400);
-      return () => clearTimeout(t);
-    }
-  }, [loaded]);
 
   return (
     <section className="relative h-[60vh] min-h-[460px] flex items-stretch overflow-hidden">
@@ -21,18 +18,18 @@ export function Hero() {
           src="/images/waterfowl-lab-splash-page.jpg"
           alt="Marsh waterfowl habitat"
           fill
+          fetchPriority="high"
           priority
           placeholder="blur"
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M+BFwADJgGI1CyMgQAAAABJRU5ErkJggg=="
           className={`object-cover object-center transition-transform duration-[3500ms] ease-out ${loaded ? 'scale-105' : 'scale-[1.18]'}`}
-          sizes="100vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
           onLoad={() => setLoaded(true)}
         />
         {!loaded && <div className="absolute inset-0 shimmer" aria-hidden />}
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" aria-hidden />
-      {showAmbient && <div className="fog-layer pointer-events-none" aria-hidden />}
-      {showAmbient && <div className="birds-layer pointer-events-none" aria-hidden />}
+  {process.env.NODE_ENV !== 'test' && <AmbientLayers delay={420} />}
       <div className="relative z-10 flex items-center w-full">
         <div className="mx-auto max-w-6xl px-4 py-16 md:py-24 fade-in">
           <h1 className="hero-heading text-5xl md:text-6xl drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
