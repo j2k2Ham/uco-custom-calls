@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { CartDrawer } from './CartDrawer';
-import { CartProvider, useCart } from '@/hooks/useCart';
-import { UserProvider } from '@/hooks/useUser';
+import { useCart } from '@/hooks/useCart';
+import { renderWithProviders } from '@/test/providers';
 import type { Product } from '@/types';
 import React from 'react';
 
@@ -22,19 +22,10 @@ function Setup({ open = true }: Readonly<{ open?: boolean }>) {
   return <CartDrawer open={open} onClose={() => {}} />;
 }
 
-function Wrapper() {
-  return (
-    <UserProvider>
-      <CartProvider>
-        <Setup />
-      </CartProvider>
-    </UserProvider>
-  );
-}
 
 describe('CartDrawer', () => {
   it('renders added item and subtotal', async () => {
-    render(<Wrapper />);
+  renderWithProviders(<Setup />);
     await waitFor(() => expect(screen.getByText('Drawer Item')).toBeInTheDocument());
     expect(screen.getByText(/Subtotal/i)).toBeInTheDocument();
   const prices = screen.getAllByText('$15.00');
@@ -42,7 +33,7 @@ describe('CartDrawer', () => {
   });
 
   it('removes item when Remove clicked', async () => {
-    render(<Wrapper />);
+  renderWithProviders(<Setup />);
   const removeBtn = await screen.findByRole('button', { name: /remove/i });
     fireEvent.click(removeBtn);
     expect(screen.getByText(/Cart is empty/i)).toBeInTheDocument();

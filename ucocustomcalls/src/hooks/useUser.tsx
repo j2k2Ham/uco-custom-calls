@@ -18,10 +18,11 @@ interface UserContextShape {
 
 const UserCtx = createContext<UserContextShape | null>(null);
 const STORAGE_KEY = 'uco.user';
+const SKIP_DELAY = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.NEXT_PUBLIC_AUTH_DELAY === '0');
 
 function fakeDelay(ms: number) {
-  const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
-  return new Promise(res => setTimeout(res, isTest ? 0 : ms));
+  if (SKIP_DELAY) return Promise.resolve();
+  return new Promise(res => setTimeout(res, ms));
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
@@ -46,16 +47,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string): Promise<User> => {
     setLoading(true);
-  await fakeDelay(300);
-    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) throw new Error('Invalid email');
-    if (password.length < 4) throw new Error('Password too short');
+    if (!SKIP_DELAY) await fakeDelay(300);
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { setLoading(false); throw new Error('Invalid email'); }
+    if (password.length < 4) { setLoading(false); throw new Error('Password too short'); }
     const next: User = { id: `u_${btoa(email)}`, email, provider: 'local' };
     setUser(next); persist(next); setLoading(false); return next;
   }, []);
 
   const loginWithProvider = useCallback(async (provider: 'google' | 'facebook'): Promise<User> => {
     setLoading(true);
-  await fakeDelay(400);
+    if (!SKIP_DELAY) await fakeDelay(400);
     const email = provider === 'google' ? 'user@google.example' : 'user@facebook.example';
     const next: User = { id: `u_${provider}_${Date.now()}`, email, provider };
     setUser(next); persist(next); setLoading(false); return next;

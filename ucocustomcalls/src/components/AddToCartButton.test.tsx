@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { AddToCartButton } from './AddToCartButton';
-import { CartProvider, useCart } from '@/hooks/useCart';
-import { UserProvider } from '@/hooks/useUser';
+import { useCart } from '@/hooks/useCart';
+import { renderWithProviders } from '@/test/providers';
 import type { Product } from '@/types';
 import React from 'react';
 
@@ -23,14 +23,7 @@ const product: Product = {
 
 describe('AddToCartButton', () => {
   it('adds item and increments cart count', () => {
-    render(
-      <UserProvider>
-        <CartProvider>
-          <AddToCartButton product={product} />
-          <CartCount />
-        </CartProvider>
-      </UserProvider>
-    );
+    renderWithProviders(<><AddToCartButton product={product} /><CartCount /></>);
     expect(screen.getByTestId('cart-count').textContent).toBe('0');
     fireEvent.click(screen.getByRole('button', { name: /add to cart/i }));
     expect(screen.getByTestId('cart-count').textContent).toBe('1');

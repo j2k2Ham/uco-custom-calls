@@ -67,6 +67,63 @@ Adjust the canonical domain inside the JSON-LD (currently `https://ucocustomcall
 - Expand gallery for zoom / swipe gestures.
 - Integrate real inventory + pricing source of truth (CMS or headless commerce).
 
+## Mock Authentication & User-Scoped Cart
+
+This repository includes a lightweight client-only authentication simulation used for local development and UI flows.
+
+### User Model
+
+Stored user object (in `localStorage` under `uco.user`):
+
+```ts
+interface StoredUser {
+  id: string;       // stable id (email hash or provider-based)
+  name: string;     // display name (derived from email prefix or provider)
+  provider?: 'password' | 'google' | 'facebook';
+  email?: string;
+}
+```
+
+### Providers
+
+- Email + Password (validation: email must contain `@`, password length ≥ 6)
+- Google / Facebook SSO buttons (stubs returning synthetic users with deterministic ids)
+
+### Cart Segmentation
+
+Cart storage keys:
+
+| State | Key Pattern |
+|-------|-------------|
+| Guest (no user) | `uco.cart.guest` |
+| Logged-in user  | `uco.cart.<userId>` |
+
+Switching users does not wipe other carts; each user (and guest) maintains an isolated cart. Hydration only replaces in‑memory state when a stored value exists to prevent spurious clears.
+
+### Auth Delay Bypass (Testing)
+
+Authentication actions previously simulated network latency (300–400ms). Tests set `NODE_ENV==='test'` which triggers a `SKIP_DELAY` flag in `useUser` to make login/logout synchronous. You can also force zero delay in dev by setting `NEXT_PUBLIC_AUTH_DELAY=0`.
+
+### Components
+
+| Component | Responsibility |
+|-----------|----------------|
+| `UserProvider` (`src/hooks/useUser.tsx`) | Context with `user`, `login`, `loginWithProvider`, `logout`, persistence |
+| `ProfileMenu` (`src/components/ProfileMenu.tsx`) | Header icon, conditional menu, opens login drawer |
+| `LoginDrawer` (internal) | Form + SSO buttons, error states, accessible dialog |
+
+### Testing Notes
+
+`ProfileMenu.test.tsx` validates: password login flow, Google SSO, persistence across remount. Label associations (`htmlFor`/`id`) were added for accessible querying (`getByLabelText`). Artificial delays are skipped, keeping the longest profile test under ~200ms on a typical dev machine.
+
+### Extending
+
+- Replace stubs with real API calls: inject async functions via context props or environment based strategy pattern.
+- Add refresh token handling: extend stored user with `token` + expiry and schedule silent renew.
+- Harden validation: integrate `zod` or form library.
+
+Until real backend integration, DO NOT treat this layer as secure—it's purely a UI convenience.
+
 ## Custom Inquiry System
 
 The `/custom` page provides an AJAX form posting to `/api/contact`.

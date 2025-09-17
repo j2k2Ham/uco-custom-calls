@@ -69,12 +69,12 @@ function LoginDrawer({ open, onClose }: { open: boolean; onClose: () => void }) 
         <Dialog.Title className="text-lg font-semibold">Login</Dialog.Title>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm mb-1">Email</label>
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full px-3 py-2 rounded bg-camo-light/40 border border-camo-light" />
+            <label htmlFor="login-email" className="block text-sm mb-1">Email</label>
+            <input id="login-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} required className="w-full px-3 py-2 rounded bg-camo-light/40 border border-camo-light" />
           </div>
           <div>
-            <label className="block text-sm mb-1">Password</label>
-            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required className="w-full px-3 py-2 rounded bg-camo-light/40 border border-camo-light" />
+            <label htmlFor="login-password" className="block text-sm mb-1">Password</label>
+            <input id="login-password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required className="w-full px-3 py-2 rounded bg-camo-light/40 border border-camo-light" />
           </div>
           {error && <div className="text-sm text-red-400" role="alert">{error}</div>}
           <div className="flex gap-3">

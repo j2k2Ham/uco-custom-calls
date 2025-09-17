@@ -289,6 +289,20 @@ Audio components include `<track>` elements for captions. A placeholder WebVTT f
 
 If you have questions about the structure or want to expand functionality (e.g., coupons, multi-currency), open an issue or start a discussion.
 
+### Mock Authentication & User-Scoped Cart
+
+The app includes a client-only auth context used for UI flows (no real backend):
+
+- `UserProvider` (`src/hooks/useUser.tsx`) persists a `user` object in `localStorage` key `uco.user`.
+- Login methods: email/password (basic validation) plus Google / Facebook stub buttons creating synthetic users.
+- Cart keys are segmented: `uco.cart.guest` (no user) vs `uco.cart.<userId>` while logged in.
+- Switching users preserves each cart; hydration only overwrites when a stored key exists.
+- Tests skip artificial auth delays via an internal `SKIP_DELAY` flag (triggered under `NODE_ENV==='test'` or `NEXT_PUBLIC_AUTH_DELAY=0`).
+
+`ProfileMenu` adds a header icon with conditional items (Login / My Account / Logout) and a drawer housing the login form & SSO buttons. Labels are explicitly associated (`htmlFor` / `id`) for accessibility and reliable test queries.
+
+To migrate to real auth later, inject async implementations into the provider or replace internal stub logic—UI contracts (login/logout shape) can remain stable.
+
 ### Turbopack Fallback & CSS Crash Troubleshooting
 
 On some Windows environments an internal Turbopack crash (`TurbopackInternalError` while processing `globals.css`) can surface as:

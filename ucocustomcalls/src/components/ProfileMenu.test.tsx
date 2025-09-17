@@ -1,18 +1,13 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
-import { UserProvider } from '@/hooks/useUser';
-import { CartProvider } from '@/hooks/useCart';
 import { ProfileMenu } from './ProfileMenu';
-
-function Providers({ children }: { children: React.ReactNode }) {
-  return <UserProvider><CartProvider>{children}</CartProvider></UserProvider>;
-}
+import { renderWithProviders } from '@/test/providers';
 
 describe('ProfileMenu', () => {
   beforeEach(() => localStorage.clear());
 
   it('shows Login when logged out then shows account options after login', async () => {
-    render(<Providers><ProfileMenu /></Providers>);
+  renderWithProviders(<ProfileMenu />);
     fireEvent.click(screen.getByLabelText(/account menu/i));
     const loginItem = await screen.findByRole('menuitem', { name: /login/i });
     expect(loginItem).toBeInTheDocument();
@@ -30,7 +25,7 @@ describe('ProfileMenu', () => {
   });
 
   it('can login with Google SSO', async () => {
-    render(<Providers><ProfileMenu /></Providers>);
+  renderWithProviders(<ProfileMenu />);
     fireEvent.click(screen.getByLabelText(/account menu/i));
     fireEvent.click(await screen.findByRole('menuitem', { name: /login/i }));
   await screen.findByRole('heading', { name: /login/i });
@@ -43,7 +38,7 @@ describe('ProfileMenu', () => {
 
   it('persists user session across reload (re-mount)', async () => {
     // First mount: login
-    const { unmount } = render(<Providers><ProfileMenu /></Providers>);
+  const { unmount } = renderWithProviders(<ProfileMenu />);
     fireEvent.click(screen.getByLabelText(/account menu/i));
     fireEvent.click(await screen.findByRole('menuitem', { name: /login/i }));
   await screen.findByRole('heading', { name: /login/i });
@@ -56,7 +51,7 @@ describe('ProfileMenu', () => {
     });
     unmount();
     // Second mount: should load from storage
-    render(<Providers><ProfileMenu /></Providers>);
+  renderWithProviders(<ProfileMenu />);
     fireEvent.click(screen.getByLabelText(/account menu/i));
     expect(await screen.findByRole('menuitem', { name: /logout/i })).toBeInTheDocument();
   });
