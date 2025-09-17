@@ -98,3 +98,14 @@ export function breadcrumbJsonLD(items: { name: string; url: string }[]) {
     }))
   };
 }
+
+export function aboutPageJsonLD(opts: { name: string; description: string; url?: string; imageUrls?: string[] }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: opts.name,
+    description: opts.description,
+    url: opts.url || BASE_URL + '/about',
+    image: (opts.imageUrls || []).map(src => (src.startsWith('http') ? src : BASE_URL + src))
+  };
+}
