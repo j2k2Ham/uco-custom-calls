@@ -13,17 +13,6 @@
   --color-sky-80: color-mix(in srgb, var(--color-sky) 80%, transparent);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
-  --font-mono: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  --color-camo: var(--color-camo);
-  --color-camo-light: var(--color-camo-light);
-  --color-brass: var(--color-brass);
-  --color-sky: var(--color-sky);
-  --color-sky-80: var(--color-sky-80);
-}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -36,4 +25,21 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes fadeInScale {
+  0% { opacity: 0; transform: translateY(4px) scale(.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeInScale { animation: fadeInScale .16s ease-out; }
+.animate-slideDown { animation: slideDown .22s cubic-bezier(.16,.84,.44,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeInScale, .animate-slideDown { animation: none !important; }
 }
