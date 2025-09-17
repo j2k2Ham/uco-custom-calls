@@ -26,6 +26,18 @@ export function Nav() {
   const shopMenuRef = React.useRef<HTMLUListElement | null>(null);
   const huntingBtnRef = React.useRef<HTMLButtonElement | null>(null);
   const huntingMenuRef = React.useRef<HTMLUListElement | null>(null);
+  const lastShopItemRef = React.useRef<string | null>(null);
+  const lastHuntingItemRef = React.useRef<string | null>(null);
+
+  // Restore last focused items if paths still present
+  React.useEffect(() => {
+    try {
+      const s = localStorage.getItem('nav.last.shop');
+      if (s) lastShopItemRef.current = s;
+      const h = localStorage.getItem('nav.last.hunting');
+      if (h) lastHuntingItemRef.current = h;
+    } catch {}
+  }, []);
 
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -53,13 +65,21 @@ export function Nav() {
         }
       }
     }
+    function onResize() {
+      if (window.innerWidth < 768) { // md breakpoint
+        if (openShop) setOpenShop(false);
+        if (openHunting) setOpenHunting(false);
+      }
+    }
     window.addEventListener('keydown', onKey);
     window.addEventListener('mousedown', onClick);
     window.addEventListener('touchstart', onClick);
+    window.addEventListener('resize', onResize);
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('mousedown', onClick);
       window.removeEventListener('touchstart', onClick);
+      window.removeEventListener('resize', onResize);
     };
   }, [openShop, openHunting]);
 
@@ -83,16 +103,24 @@ export function Nav() {
             className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openShop ? 'text-brass' : ''}`}
             aria-haspopup="true"
             aria-expanded={openShop}
-            onClick={() => setOpenShop(o => { const next = !o; if (next) setOpenHunting(false); return next; })}
+            onClick={() => setOpenShop(o => { const next = !o; if (next) { setOpenHunting(false); } return next; })}
             onKeyDown={e => {
               if (["ArrowDown","Enter"," "].includes(e.key)) {
                 e.preventDefault();
                 setOpenShop(true); setOpenHunting(false);
                 // focus first item next tick
                 requestAnimationFrame(() => {
-                  const first = shopMenuRef.current?.querySelector('a');
+                  const selector = lastShopItemRef.current ? `a[href='${lastShopItemRef.current}']` : 'a';
+                  const first = shopMenuRef.current?.querySelector(selector) || shopMenuRef.current?.querySelector('a');
                   (first as HTMLElement | null)?.focus();
                 });
+              }
+              if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                huntingBtnRef.current?.focus();
+              } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                // wrap to last nav item before shop? For now focus hunting then shop; ignore.
               }
             }}
           >
@@ -116,7 +144,7 @@ export function Nav() {
                       tabIndex={0}
                       className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
                       href={item.href}
-                      onClick={() => setOpenShop(false)}
+                      onClick={() => { setOpenShop(false); lastShopItemRef.current = item.href; try { localStorage.setItem('nav.last.shop', item.href); } catch {} }}
                       onKeyDown={e => {
                         const items = shopMenuRef.current ? Array.from(shopMenuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
                         const idxCurrent = items.indexOf(e.currentTarget as HTMLElement);
@@ -144,6 +172,12 @@ export function Nav() {
                             const next = items[(idxCurrent + 1) % items.length];
                             next?.focus();
                           }
+                        } else if (e.key === 'ArrowRight') {
+                          e.preventDefault();
+                          huntingBtnRef.current?.focus();
+                        } else if (e.key === 'ArrowLeft') {
+                          e.preventDefault();
+                          huntingBtnRef.current?.focus();
                         } else if (e.key === 'Escape') {
                           setOpenShop(false);
                           shopBtnRef.current?.focus();
@@ -162,15 +196,23 @@ export function Nav() {
             className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openHunting ? 'text-brass' : ''}`}
             aria-haspopup="true"
             aria-expanded={openHunting}
-            onClick={() => setOpenHunting(o => { const next = !o; if (next) setOpenShop(false); return next; })}
+            onClick={() => setOpenHunting(o => { const next = !o; if (next) { setOpenShop(false); } return next; })}
             onKeyDown={e => {
               if (["ArrowDown","Enter"," "].includes(e.key)) {
                 e.preventDefault();
                 setOpenHunting(true); setOpenShop(false);
                 requestAnimationFrame(() => {
-                  const first = huntingMenuRef.current?.querySelector('a');
+                  const selector = lastHuntingItemRef.current ? `a[href='${lastHuntingItemRef.current}']` : 'a';
+                  const first = huntingMenuRef.current?.querySelector(selector) || huntingMenuRef.current?.querySelector('a');
                   (first as HTMLElement | null)?.focus();
                 });
+              }
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                shopBtnRef.current?.focus();
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                shopBtnRef.current?.focus();
               }
             }}
           >
@@ -194,7 +236,7 @@ export function Nav() {
                       tabIndex={0}
                       className={`px-4 py-2 text-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60 rounded-sm hover:bg-camo-light focus:bg-camo-light ${active ? 'text-brass' : ''}`}
                       href={item.href}
-                      onClick={() => setOpenHunting(false)}
+                      onClick={() => { setOpenHunting(false); lastHuntingItemRef.current = item.href; try { localStorage.setItem('nav.last.hunting', item.href); } catch {} }}
                       onKeyDown={e => {
                         const items = huntingMenuRef.current ? Array.from(huntingMenuRef.current.querySelectorAll('a')) as HTMLElement[] : [];
                         const idxCurrent = items.indexOf(e.currentTarget as HTMLElement);
@@ -222,6 +264,12 @@ export function Nav() {
                             const next = items[(idxCurrent + 1) % items.length];
                             next?.focus();
                           }
+                        } else if (e.key === 'ArrowLeft') {
+                          e.preventDefault();
+                          shopBtnRef.current?.focus();
+                        } else if (e.key === 'ArrowRight') {
+                          e.preventDefault();
+                          shopBtnRef.current?.focus();
                         } else if (e.key === 'Escape') {
                           setOpenHunting(false);
                           huntingBtnRef.current?.focus();
