@@ -10,8 +10,8 @@ export function Nav() {
     { href: "/category/lanyards", label: "Paracord Lanyards" }
   ];
   const otherLinks = [
-    { href: "/sound-files", label: "Sound Files" },
     { href: "/custom", label: "Custom Calls" },
+    { href: "/sound-files", label: "Sound Files" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" }
   ];

@@ -76,8 +76,8 @@ export function Header() {
                     </ul>
                   )}
                 </li>
-                <li><Link className="py-2 hover:text-brass" href="/sound-files" onClick={() => setMobileOpen(false)}>Sound Files</Link></li>
                 <li><Link className="py-2 hover:text-brass" href="/custom" onClick={() => setMobileOpen(false)}>Custom Calls</Link></li>
+                <li><Link className="py-2 hover:text-brass" href="/sound-files" onClick={() => setMobileOpen(false)}>Sound Files</Link></li>
                 <li><Link className="py-2 hover:text-brass" href="/about" onClick={() => setMobileOpen(false)}>About</Link></li>
                 <li><Link className="py-2 hover:text-brass" href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link></li>
               </ul>
