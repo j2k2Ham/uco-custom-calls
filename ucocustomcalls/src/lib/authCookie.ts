@@ -77,38 +77,61 @@ interface ServerResponseLike {
   getHeader?: (k: string) => unknown;
   cookies?: unknown;
 }
+type SetCookieValue = string | string[] | undefined;
+
+
+function getExistingSetCookie(res: ServerResponseLike): SetCookieValue {
+  if (res?.setHeader && res.getHeader) {
+    return res.getHeader('Set-Cookie') as SetCookieValue;
+  } else if (res?.headers) {
+    if (res.headers instanceof Headers) {
+      // Headers does not provide direct access to all Set-Cookie values, so return undefined
+      return undefined;
+    } else {
+      const h = res.headers as { [k: string]: unknown };
+      return h['Set-Cookie'] as SetCookieValue;
+    }
+  }
+  return undefined;
+}
+
+function handleHeaders(headers: HeadersLike, cookie: string) {
+  if (headers instanceof Headers) {
+    headers.append('Set-Cookie', cookie);
+  } else if (headers) {
+    const h = headers as { [k: string]: unknown };
+    if (Array.isArray(h['Set-Cookie'])) h['Set-Cookie'].push(cookie);
+    else if (h['Set-Cookie']) h['Set-Cookie'] = [h['Set-Cookie'], cookie];
+    else h['Set-Cookie'] = cookie;
+  }
+}
+
+function setCookieOnResponse(res: ServerResponseLike, cookie: string) {
+  if (res?.setHeader) {
+    // Append or set
+    const existing = getExistingSetCookie(res);
+    if (existing) {
+      const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing, cookie];
+      res.setHeader('Set-Cookie', arr);
+    } else {
+      res.setHeader('Set-Cookie', cookie);
+    }
+  } else if (res?.headers) {
+    handleHeaders(res.headers, cookie);
+  }
+}
+
 export function setAuthCookieServer(res: ServerResponseLike, payload: AuthCookiePayload) {
-  // We still produce the same signed value; consumer (API route) can call this.
   return (async () => {
     const value = await signAuthCookie(payload);
     const cookie = `uco_auth=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7*24*60*60}`;
-    if (res?.setHeader) {
-      // Append or set
-  const existing = res.getHeader ? res.getHeader('Set-Cookie') : undefined;
-      if (existing) {
-  const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
-        res.setHeader('Set-Cookie', arr);
-      } else {
-        res.setHeader('Set-Cookie', cookie);
-      }
-    } else if (res?.headers) {
-      // If it's a real Headers instance use append
-      if (res.headers instanceof Headers) {
-        res.headers.append('Set-Cookie', cookie);
-      } else {
-        const h = res.headers as { [k: string]: unknown };
-        if (Array.isArray(h['Set-Cookie'])) h['Set-Cookie'].push(cookie);
-        else if (h['Set-Cookie']) h['Set-Cookie'] = [h['Set-Cookie'], cookie];
-        else h['Set-Cookie'] = cookie;
-      }
-    }
+    setCookieOnResponse(res, cookie);
   })();
 }
 
-export function clearAuthCookieServer(res: ServerResponseLike) {
-  const cookie = 'uco_auth=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+function appendSetCookie(res: ServerResponseLike, cookie: string) {
   if (res?.setHeader) {
-  const existing = res.getHeader ? res.getHeader('Set-Cookie') : undefined;
+    const existing = res.getHeader ? res.getHeader('Set-Cookie') : undefined;
     if (existing) {
       const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
       res.setHeader('Set-Cookie', arr);
@@ -116,13 +139,11 @@ export function clearAuthCookieServer(res: ServerResponseLike) {
       res.setHeader('Set-Cookie', cookie);
     }
   } else if (res?.headers) {
-    if (res.headers instanceof Headers) {
-      res.headers.append('Set-Cookie', cookie);
-    } else {
-      const h = res.headers as { [k: string]: unknown };
-      if (Array.isArray(h['Set-Cookie'])) h['Set-Cookie'].push(cookie);
-      else if (h['Set-Cookie']) h['Set-Cookie'] = [h['Set-Cookie'], cookie];
-      else h['Set-Cookie'] = cookie;
-    }
+    handleHeaders(res.headers, cookie);
   }
+}
+
+export function clearAuthCookieServer(res: ServerResponseLike) {
+  const cookie = 'uco_auth=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  appendSetCookie(res, cookie);
 }

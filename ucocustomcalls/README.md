@@ -727,4 +727,3 @@ Troubleshooting:
 Ambient Layers & Tests:
 
 `process.env.NODE_ENV === 'test'` guard prevents unnecessary dynamic animation work and noisy act warnings.
-

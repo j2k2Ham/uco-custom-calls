@@ -25,7 +25,7 @@ function readAll(): StoredUserRecord[] {
 }
 
 function writeAll(list: StoredUserRecord[]) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf8');
+return fs.promises.writeFile(DATA_FILE, JSON.stringify(list, null, 2), 'utf8');
 }
 
 export function findUserByEmail(email: string): StoredUserRecord | undefined {

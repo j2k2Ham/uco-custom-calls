@@ -93,7 +93,7 @@ export function Nav() {
 
   return (
   <nav aria-label="Primary">
-	<ul className="hidden md:flex gap-6 items-center" aria-label="Main menu" role="menubar">
+  <ul className="hidden md:flex gap-6 items-center" aria-label="Main menu">
         <li role="none">
           <Link
             role="menuitem"
@@ -111,7 +111,8 @@ export function Nav() {
             role="menuitem"
             onClick={() => setOpenShop(o => { const next = !o; if (next) { setOpenHunting(false); } setStored(NavStorageKey.ShopOpen, next ? '1' : '0'); return next; })}
             onKeyDown={e => {
-              if (["ArrowDown","Enter"," "].includes(e.key)) {
+                const SPACE_KEY = ' ';
+                if (["ArrowDown", "Enter"].includes(e.key) || e.key === SPACE_KEY) {
                 e.preventDefault();
                 setOpenShop(true); setOpenHunting(false);
                 // focus first item next tick
@@ -138,7 +139,6 @@ export function Nav() {
               ref={shopMenuRef}
               aria-label="Shop submenu"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
-              role="menu"
             >
               {shopItems.map((item) => {
                 const active = pathname.startsWith(item.href);
@@ -211,10 +211,7 @@ export function Nav() {
                   (first as HTMLElement | null)?.focus();
                 });
               }
-              if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                shopBtnRef.current?.focus();
-              } else if (e.key === 'ArrowRight') {
+              if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
                 shopBtnRef.current?.focus();
               }
@@ -228,7 +225,6 @@ export function Nav() {
               ref={huntingMenuRef}
               aria-label="Hunting submenu"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
-              role="menu"
             >
               {huntingItems.map((item) => {
                 const active = pathname.startsWith(item.href);

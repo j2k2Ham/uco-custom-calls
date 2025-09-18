@@ -7,10 +7,9 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryNav } from "@/components/CategoryNav";
 
 type CategoryPageParams = { handle: string };
-// Using any in signature to satisfy Next.js internal PageProps constraint; runtime validation below
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function generateMetadata({ params }: any): Promise<Metadata> {
-  const resolved = await Promise.resolve(params as CategoryPageParams);
+
+export async function generateMetadata({ params }: { params: CategoryPageParams }): Promise<Metadata> {
+  const resolved = await Promise.resolve(params);
   const category = CATEGORIES.find(c => c.handle === resolved.handle);
   if (!category) return { title: 'Category Not Found' };
   const title = `${category.name} Calls | UCO Custom Calls`;
@@ -24,9 +23,8 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default async function CategoryPage({ params }: any) {
-  const resolved = await Promise.resolve(params as CategoryPageParams);
+export default async function CategoryPage({ params }: { readonly params: CategoryPageParams }) {
+  const resolved = await Promise.resolve(params);
   const category = CATEGORIES.find(c => c.handle === resolved.handle);
   if (!category) return notFound();
   const products = PRODUCTS.filter(p => p.category === category.handle);

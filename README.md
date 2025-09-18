@@ -1,4 +1,5 @@
 # uco-custom-calls
+
 Website for UCO Custom Calls
 
 ## Development
@@ -177,11 +178,13 @@ Implementation: `src/lib/authCookie.ts` exports `signAuthCookie` & `verifyAuthCo
 Lifecycle:
 
 1. On login / account creation the cookie is (re)issued (7 day expiry).
-2. On logout the cookie is cleared (Max-Age=0).
-3. `middleware.ts` (matcher `/account`) now:
-  - Redirects to `/` if cookie is missing.
-  - Verifies the signature; invalid or malformed token ➜ clears cookie + redirect with `?from=account`.
-4. A valid token simply allows the request (no server session created—still client trust only).
+1. On logout the cookie is cleared (Max-Age=0).
+1. `middleware.ts` (matcher `/account`) now:
+
+- Redirects to `/` if cookie is missing.
+- Verifies the signature; invalid or malformed token ➜ clears cookie + redirect with `?from=account`.
+
+1. A valid token simply allows the request (no server session created—still client trust only).
 
 Limitations (Dev Only):
 
@@ -365,4 +368,3 @@ When `maxVisible` is reached, new toasts enqueue (FIFO). As visible toasts exit 
 - Add `aria-live="assertive"` variant for critical errors.
 - Support persistent toasts (no timeout) and a visual pin icon.
 - Global dismiss shortcut (e.g., bind `Escape` when region focused or app-level listener invoking `dismissAll`).
-
