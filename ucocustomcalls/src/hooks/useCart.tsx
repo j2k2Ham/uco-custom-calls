@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useUser } from './useUser';
-import type { Product } from "@/types/product";
+import type { Product } from "../types/product";
 
 type CartItem = { id: string; title: string; priceCents: number; qty: number; slug: string };
 type CartContext = {

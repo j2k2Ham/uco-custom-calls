@@ -107,7 +107,9 @@ function LoginDrawer({ open, onClose, mode, setMode }: { readonly open: boolean;
           </div>
           {error && <div className="text-sm text-red-400" role="alert">{error}</div>}
           <div className="flex gap-3">
-            <button type="submit" disabled={loading} className="flex-1 bg-brass text-black rounded-md px-4 py-2 disabled:opacity-60">{loading ? '...' : (mode === 'login' ? 'Login' : 'Create')}</button>
+            {(() => { const label = mode === 'login' ? 'Login' : 'Create'; return (
+              <button type="submit" disabled={loading} className="flex-1 bg-brass text-black rounded-md px-4 py-2 disabled:opacity-60">{loading ? '...' : label}</button>
+            ); })()}
             <button type="button" onClick={onClose} className="px-4 py-2 border rounded-md">Cancel</button>
           </div>
           <div className="text-right text-sm">

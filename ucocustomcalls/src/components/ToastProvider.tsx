@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 
 export interface ToastAction {
   label: string;
@@ -148,25 +148,22 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }
     else if (e.key === 'Delete') { if (focusIndex != null) beginExit(toasts[focusIndex].id); }
   }, [toasts, focusIndex, beginExit]);
 
+  const ctxValue = useMemo(() => ({ push, dismissAll }), [push, dismissAll]);
   return (
-    <ToastCtx.Provider value={{ push, dismissAll }}>
+    <ToastCtx.Provider value={ctxValue}>
       {children}
       <div aria-live="polite" aria-atomic="false" className="fixed bottom-4 right-4 space-y-2 z-50 max-w-sm outline-none" tabIndex={0} onKeyDown={handleKey}>
         {toasts.map((t, idx) => {
           const isExiting = exiting[t.id];
           const delay = Math.min(idx * 60, 300);
           const percent = t.total ? (t.remaining / t.total) * 100 : 0;
+          const variantClass = t.type === 'error' ? 'toast-error' : t.type === 'success' ? 'toast-success' : '';
           return (
             <output
               key={t.id}
               onMouseEnter={() => { if (hoverMode === 'extend') extendToast(t.id); else if (hoverMode === 'pause') pauseToast(t.id); }}
               onMouseLeave={() => { if (hoverMode === 'pause') resumeToast(t.id); }}
-              className={`group toast-base rounded-xl px-4 py-3 text-sm shadow-lg flex items-start gap-3 leading-snug will-change-transform relative overflow-hidden transition-all duration-200 ease-out 
-                ${t.type === 'error' ? 'toast-error' : t.type === 'success' ? 'toast-success' : ''}
-                ${t.paused ? 'ring-1 ring-camo-light/60' : ''}
-                ${focusIndex === idx ? 'outline outline-1 outline-brass' : ''}
-                ${isExiting ? 'toast-fade-exit-active' : 'toast-fade-enter-active'}
-              `}
+              className={`group toast-base rounded-xl px-4 py-3 text-sm shadow-lg flex items-start gap-3 leading-snug will-change-transform relative overflow-hidden transition-all duration-200 ease-out ${variantClass} ${t.paused ? 'ring-1 ring-camo-light/60' : ''} ${focusIndex === idx ? 'outline outline-1 outline-brass' : ''} ${isExiting ? 'toast-fade-exit-active' : 'toast-fade-enter-active'}`}
               style={{ transitionDelay: isExiting ? '0ms' : `${delay}ms` }}
               tabIndex={focusIndex === idx ? 0 : -1}
             >

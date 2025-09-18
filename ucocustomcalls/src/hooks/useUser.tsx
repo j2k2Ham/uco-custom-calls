@@ -31,7 +31,7 @@ function fakeDelay(ms: number) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
+export function UserProvider({ children }: { readonly children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -100,7 +100,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Login failed');
         setUser(data.user); setLoading(false); return data.user;
-      } catch (e: any) { setLoading(false); throw e; }
+  } catch (e: unknown) { setLoading(false); throw e; }
     }
     const users = loadUsers();
     const existing = users[email.toLowerCase()] as User | undefined;
@@ -160,7 +160,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Registration failed');
         setUser(data.user); setLoading(false); return data.user;
-      } catch (e: any) { setLoading(false); throw e; }
+  } catch (e: unknown) { setLoading(false); throw e; }
     }
     const users = loadUsers();
     if (users[email.toLowerCase()]) { setLoading(false); throw new Error('Account already exists'); }
@@ -184,7 +184,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (next !== confirm) throw new Error('Passwords do not match');
     if (current === next) throw new Error('New password must differ');
     if (!SKIP_DELAY) await fakeDelay(300);
-    return;
+  // completed changePassword (client mode)
   }, [user]);
 
   const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout, updateProfile, changePassword }), [user, loading, login, loginWithProvider, createAccount, logout, updateProfile, changePassword]);
