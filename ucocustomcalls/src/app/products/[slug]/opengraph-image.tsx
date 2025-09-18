@@ -27,12 +27,50 @@ export default async function Image({ params }: ProductPageParams) {
       if (process.env.NEXT_PUBLIC_LOG_RATE_LIMIT === '1') {
         console.warn(`[product-og] rate limit exceeded ip=${ip} count=${rec.count}`);
       }
-      return new Response('Rate limit exceeded', { status: 429 }) as unknown as ImageResponse;
+      return new ImageResponse(
+        (
+          <div
+            style={{
+              height: '100%',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(120deg,#0a1a12,#143323)',
+              fontSize: 48,
+              color: 'white',
+              fontFamily: 'system-ui, Arial'
+            }}
+          >
+            <span>Rate limit exceeded</span>
+          </div>
+        ),
+        { ...size, status: 429 }
+      );
     }
   }
   const product = PRODUCTS.find(p => p.slug === params.slug);
   if (!product) {
-    return new Response('Not Found', { status: 404 }) as unknown as ImageResponse;
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(120deg,#0a1a12,#143323)',
+            fontSize: 48,
+            color: 'white',
+            fontFamily: 'system-ui, Arial'
+          }}
+        >
+          <span>Product Not Found</span>
+        </div>
+      ),
+      { ...size, status: 404 }
+    );
   }
   const title = product.title;
   const etag = await strongEtag('pog:' + title);
