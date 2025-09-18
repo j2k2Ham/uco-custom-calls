@@ -26,8 +26,8 @@ describe('SearchOverlay suggestions', () => {
     fireEvent.change(input, { target: { value: 'pin' } });
     // Wait for debounce (~220ms) plus buffer
     await waitFor(() => {
-      // The Pintail Acrylic should appear as suggestion (title case variant)
-      expect(screen.getByText(/pintail acrylic/i)).toBeInTheDocument();
+      const matches = screen.getAllByText((_, el) => !!el && /pintail acrylic/i.test(el.textContent || ''));
+      expect(matches.length).toBeGreaterThan(0);
     }, { timeout: 1000 });
     // Image thumbnail should be present (role img)
     expect(screen.getByRole('img', { name: /pintail/i })).toBeInTheDocument();

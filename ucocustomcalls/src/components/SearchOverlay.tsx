@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { searchProducts } from '@/lib/productStore';
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +10,8 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const [query, setQuery] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [suggestions, setSuggestions] = useState<ReturnType<typeof searchProducts>>([]);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [recent, setRecent] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -17,21 +19,57 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
       setTimeout(() => inputRef.current?.focus(), 10);
       setQuery('');
       setSubmitted(false);
+      setActiveIndex(-1);
+      // Load recent searches
+      try {
+        const raw = localStorage.getItem('uco_recent_searches');
+        if (raw) setRecent(JSON.parse(raw));
+      } catch {}
     }
   }, [open]);
 
+  const commitSearch = useCallback((value: string) => {
+    if (!value.trim()) return;
+    // Save to recent
+    try {
+      const next = [value.trim(), ...recent.filter(r => r.toLowerCase() !== value.trim().toLowerCase())].slice(0,5);
+      setRecent(next);
+      localStorage.setItem('uco_recent_searches', JSON.stringify(next));
+    } catch {}
+    // analytics event (mock)
+    window.dispatchEvent(new CustomEvent('analytics', { detail: { type: 'search_submit', query: value.trim() } }));
+    searchProducts(value, 30); // warm cache
+    setSubmitted(true);
+    onClose();
+    router.push(`/search?q=${encodeURIComponent(value)}`);
+  }, [recent, router, onClose]);
+
   const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === 'Escape') { onClose(); }
-    if (e.key === 'Enter') {
-      searchProducts(query, 30); // warm cache / parity with previous behavior
-      setSubmitted(true);
-      onClose();
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex(i => Math.min((i === -1 ? 0 : i + 1), suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex(i => {
+        if (i <= 0) return -1; // back to input focus state
+        return i - 1;
+      });
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0 && suggestions[activeIndex]) {
+        // analytics suggestion_click
+        window.dispatchEvent(new CustomEvent('analytics', { detail: { type: 'suggestion_click', slug: suggestions[activeIndex].slug, query } }));
+        onClose();
+        router.push(`/products/${suggestions[activeIndex].slug}`);
+        return;
+      }
+      commitSearch(query);
     }
   };
 
   const onChange = (v: string) => {
     setQuery(v);
+    setActiveIndex(-1);
     if (submitted) {
       // User started typing a new query; clear previous results until next Enter
       setSubmitted(false);
@@ -50,6 +88,23 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     }, 220);
     return () => clearTimeout(handle);
   }, [query, open]);
+
+  const highlight = (text: string) => {
+    const q = query.trim();
+    if (!q) return text;
+    const parts = q.split(/\s+/).filter(Boolean).map(p => p.toLowerCase());
+    if (!parts.length) return text;
+    // Build a regex to split but we'll not rely on lastIndex mutation.
+    const regex = new RegExp(`(${parts.map(p => p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`, 'ig');
+    return text.split(regex).map((seg, i) => {
+      const lower = seg.toLowerCase();
+      const key = seg + '_' + i;
+      if (parts.includes(lower)) {
+        return <mark key={key} className="bg-brass/60 text-black px-0.5 rounded-sm">{seg}</mark>;
+      }
+      return <React.Fragment key={key}>{seg}</React.Fragment>;
+    });
+  };
 
   if (!open) return null;
   return (
@@ -74,14 +129,15 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
           />
           {/* Invisible width balancer for center-grow illusion (optional future enhancement) */}
         </div>
-        {suggestions.length > 0 && !submitted && (
+        {suggestions.length > 0 && !submitted && query.trim() !== '' && (
           <div className="mt-8 w-full max-w-2xl">
             <ul className="bg-black/40 backdrop-blur rounded-md overflow-hidden divide-y divide-white/10">
-              {suggestions.map(s => (
+              {suggestions.map((s, idx) => (
                 <li key={s.id}>
                   <button
-                    className="w-full flex items-center gap-4 text-left px-4 py-3 hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70"
+                    className={`w-full flex items-center gap-4 text-left px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 ${idx === activeIndex ? 'bg-black/60' : 'hover:bg-black/50'}`}
                     onClick={() => {
+                      window.dispatchEvent(new CustomEvent('analytics', { detail: { type: 'suggestion_click', slug: s.slug, query } }));
                       router.push(`/products/${s.slug}`);
                       onClose();
                     }}
@@ -93,10 +149,25 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium truncate text-lg leading-snug">{s.title}</div>
+                      <div className="font-medium truncate text-lg leading-snug">{highlight(s.title)}</div>
                       <div className="text-xs uppercase tracking-wide text-white/50 mt-1">{s.category}</div>
                     </div>
                   </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {query.trim() === '' && recent.length > 0 && (
+          <div className="mt-10 w-full max-w-md">
+            <div className="text-white/60 text-xs uppercase tracking-wide mb-2">Recent Searches</div>
+            <ul className="flex flex-wrap gap-2">
+              {recent.map(r => (
+                <li key={r}>
+                  <button
+                    className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60"
+                    onClick={() => commitSearch(r)}
+                  >{r}</button>
                 </li>
               ))}
             </ul>
