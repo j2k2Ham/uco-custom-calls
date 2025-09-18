@@ -50,6 +50,17 @@ interface ProductLDBase {
   brand?: { '@type': 'Brand'; name: string };
   aggregateRating?: AggregateRatingLD;
   category?: string;
+  mpn?: string;
+  gtin13?: string;
+  review?: ReviewLD[];
+}
+
+interface ReviewLD {
+  '@type': 'Review';
+  reviewBody?: string;
+  datePublished?: string;
+  author: { '@type': 'Person'; name: string };
+  reviewRating: { '@type': 'Rating'; ratingValue: number; bestRating: number };
 }
 
 export function productJsonLD(p: {
@@ -83,19 +94,23 @@ export function productJsonLD(p: {
   };
   if (p.priceValidUntil) offer.priceValidUntil = p.priceValidUntil;
   if (p.sellerName) offer.seller = { '@type': 'Organization', name: p.sellerName, url: BASE_URL + '/' };
+  let resolvedImage: string | string[];
+  if (Array.isArray(p.image)) {
+    resolvedImage = p.image.map(src => (src.startsWith('http') ? src : BASE_URL + src));
+  } else {
+    resolvedImage = p.image.startsWith('http') ? p.image : BASE_URL + p.image;
+  }
   const data: ProductLDBase = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: p.name,
     description: p.description,
-    image: Array.isArray(p.image)
-      ? p.image.map(src => src.startsWith('http') ? src : BASE_URL + src)
-      : (p.image.startsWith('http') ? p.image : BASE_URL + p.image),
+    image: resolvedImage,
     offers: offer
   };
   if (p.sku) data.sku = p.sku;
-  if (p.mpn) (data as any).mpn = p.mpn;
-  if (p.gtin13) (data as any).gtin13 = p.gtin13;
+  if (p.mpn) data.mpn = p.mpn;
+  if (p.gtin13) data.gtin13 = p.gtin13;
   if (p.brandName) data.brand = { '@type': 'Brand', name: p.brandName };
   if (p.category) data.category = p.category;
   if (p.ratingValue && p.ratingCount) {
@@ -106,8 +121,8 @@ export function productJsonLD(p: {
       bestRating: p.ratingBest || 5
     };
   }
-  if (p.reviews && p.reviews.length) {
-    (data as any).review = p.reviews.map(r => ({
+  if (p.reviews?.length) {
+    data.review = p.reviews.map(r => ({
       '@type': 'Review',
       reviewBody: r.body,
       datePublished: r.date,
@@ -143,13 +158,18 @@ export function aboutPageJsonLD(opts: { name: string; description: string; url?:
 }
 
 export function organizationJsonLD(opts: { name: string; url?: string; logo?: string; sameAs?: string[]; description?: string }) {
+  let logo: string | undefined;
+  if (opts.logo) {
+    logo = opts.logo.startsWith('http') ? opts.logo : BASE_URL + opts.logo;
+  }
+  const sameAs = opts.sameAs?.length ? opts.sameAs : undefined;
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: opts.name,
     url: opts.url || BASE_URL + '/',
-    logo: opts.logo ? (opts.logo.startsWith('http') ? opts.logo : BASE_URL + opts.logo) : undefined,
+    logo,
     description: opts.description,
-    sameAs: opts.sameAs && opts.sameAs.length ? opts.sameAs : undefined
+    sameAs
   };
 }
