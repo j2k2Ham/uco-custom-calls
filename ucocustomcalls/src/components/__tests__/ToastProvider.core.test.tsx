@@ -7,8 +7,13 @@ function Harness({ children }: { children?: React.ReactNode }) {
   return <ToastProvider hoverMode="none" maxVisible={4}>{children}</ToastProvider>;
 }
 
+type ToastContextType = {
+  push: (message: string, options: { type: string; timeout: number; action?: { label: string; onClick: () => void } }) => void;
+  dismissAll: () => void;
+};
+
 function PushButtons() {
-  const { push, dismissAll } = useToast() as any;
+  const { push, dismissAll } = useToast() as ToastContextType;
   return (
     <div>
       <button onClick={() => push('A', { type: 'info', timeout: 600 })}>push-a</button>
@@ -66,8 +71,8 @@ describe('ToastProvider core behaviors', () => {
   it('invokes action callback then dismisses', () => {
     const handler = vi.fn();
     function ActionHarness() {
-      const { push } = useToast() as any;
-      return <button onClick={() => push('Action', { action: { label: 'Undo', onClick: handler }, timeout: 800 })}>with-action</button>;
+      const { push } = useToast() as ToastContextType;
+      return <button onClick={() => push('Action', { type: 'info', action: { label: 'Undo', onClick: handler }, timeout: 800 })}>with-action</button>;
     }
     render(<Harness><ActionHarness /></Harness>);
     fireEvent.click(screen.getByText('with-action'));
