@@ -14,19 +14,28 @@ describe('contactPageJsonLD', () => {
 });
 
 describe('productJsonLD', () => {
-  it('builds product data with rating', () => {
+  it('builds product data with rating, brand, seller and multiple images', () => {
     const json = productJsonLD({
       name: 'Test Product',
       description: 'Desc',
       sku: 'sku1',
-      image: '/images/test.png',
+      image: ['/images/test.png','/images/test2.png'],
       priceCents: 1234,
       url: 'https://example.com/p/test',
       ratingValue: 4.5,
-      ratingCount: 10
+      ratingCount: 10,
+      brandName: 'BrandX',
+      sellerName: 'BrandX',
+      priceValidUntil: '2030-01-01',
+      category: 'duck'
     });
     expect(json['@type']).toBe('Product');
     expect(json.offers.price).toBe('12.34');
+    expect(Array.isArray(json.image)).toBe(true);
+    expect(json.image.length).toBe(2);
+    expect(json.brand?.name).toBe('BrandX');
+    expect(json.offers.seller?.name).toBe('BrandX');
+    expect(json.offers.priceValidUntil).toBe('2030-01-01');
     expect(json.aggregateRating?.ratingValue).toBe(4.5);
     expect(json.aggregateRating?.reviewCount).toBe(10);
   });

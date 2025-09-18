@@ -58,13 +58,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
             name: product.title,
             description: product.description,
             sku: product.id,
-            image: product.images[0]?.src || '',
+            image: product.images.map(i => i.src),
             priceCents: getPriceCents(product),
             availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             url: productUrl(product.slug),
             ratingValue: product.ratingValue,
             ratingCount: product.ratingCount,
-            ratingBest: product.ratingBest
+            ratingBest: product.ratingBest,
+            brandName: 'UCO Custom Calls',
+            sellerName: 'UCO Custom Calls',
+            category: product.category,
+            priceValidUntil: new Date(Date.now() + 1000*60*60*24*90).toISOString().split('T')[0]
           }))
         }}
       />

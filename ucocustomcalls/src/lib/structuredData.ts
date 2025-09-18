@@ -24,6 +24,12 @@ interface OfferLD {
   price: string;
   availability: string;
   url: string;
+  priceValidUntil?: string;
+  seller?: {
+    '@type': 'Organization';
+    name: string;
+    url?: string;
+  };
 }
 
 interface AggregateRatingLD {
@@ -38,17 +44,19 @@ interface ProductLDBase {
   '@type': 'Product';
   name: string;
   description: string;
-  image: string;
+  image: string | string[];
   offers: OfferLD;
   sku?: string;
+  brand?: { '@type': 'Brand'; name: string };
   aggregateRating?: AggregateRatingLD;
+  category?: string;
 }
 
 export function productJsonLD(p: {
   name: string;
   description: string;
   sku?: string;
-  image: string;
+  image: string | string[];
   priceCents: number;
   currency?: string;
   availability?: string;
@@ -56,6 +64,10 @@ export function productJsonLD(p: {
   ratingValue?: number;
   ratingCount?: number;
   ratingBest?: number;
+  priceValidUntil?: string;
+  brandName?: string;
+  category?: string;
+  sellerName?: string;
 }) {
   const price = (p.priceCents / 100).toFixed(2);
   const currency = p.currency || 'USD';
@@ -66,15 +78,21 @@ export function productJsonLD(p: {
     availability: p.availability || 'https://schema.org/InStock',
     url: p.url
   };
+  if (p.priceValidUntil) offer.priceValidUntil = p.priceValidUntil;
+  if (p.sellerName) offer.seller = { '@type': 'Organization', name: p.sellerName, url: BASE_URL + '/' };
   const data: ProductLDBase = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: p.name,
     description: p.description,
-    image: p.image.startsWith('http') ? p.image : BASE_URL + p.image,
+    image: Array.isArray(p.image)
+      ? p.image.map(src => src.startsWith('http') ? src : BASE_URL + src)
+      : (p.image.startsWith('http') ? p.image : BASE_URL + p.image),
     offers: offer
   };
   if (p.sku) data.sku = p.sku;
+  if (p.brandName) data.brand = { '@type': 'Brand', name: p.brandName };
+  if (p.category) data.category = p.category;
   if (p.ratingValue && p.ratingCount) {
     data.aggregateRating = {
       '@type': 'AggregateRating',

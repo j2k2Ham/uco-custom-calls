@@ -64,6 +64,27 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                     ]
                   })) }}
                 />
+                <script
+                  type="application/ld+json"
+                  suppressHydrationWarning
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'SiteNavigationElement',
+                    name: ['Home','Products','Duck Calls','Goose Calls','Paracord Lanyards','Gear','Sound Files','Custom Calls','About','Contact'],
+                    url: [
+                      'https://ucocustomcalls.com/',
+                      'https://ucocustomcalls.com/products',
+                      'https://ucocustomcalls.com/category/duck',
+                      'https://ucocustomcalls.com/category/goose',
+                      'https://ucocustomcalls.com/category/lanyards',
+                      'https://ucocustomcalls.com/category/gear',
+                      'https://ucocustomcalls.com/sound-files',
+                      'https://ucocustomcalls.com/custom',
+                      'https://ucocustomcalls.com/about',
+                      'https://ucocustomcalls.com/contact'
+                    ]
+                  }) }}
+                />
               </CartProvider>
             </UserProvider>
           </ToastProvider>
