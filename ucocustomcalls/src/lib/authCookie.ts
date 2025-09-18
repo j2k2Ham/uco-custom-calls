@@ -2,14 +2,31 @@
 // Format: uco_auth=<b64Payload>.<hash>
 // hash = simple SHA-256 of (b64Payload + secret) truncated for brevity.
 
-// Secret resolution: prefer process.env.AUTH_COOKIE_SECRET (node / server), fallback to NEXT_PUBLIC, else throw error.
+// Secret resolution order:
+// 1. AUTH_COOKIE_SECRET (preferred, never exposed client-side)
+// 2. NEXT_PUBLIC_AUTH_COOKIE_SECRET (fallback, still not recommended – kept for legacy local setups)
+// 3. test-secret (only in test env for deterministic signatures)
+// 4. In non-production (development / preview) generate or use a fixed insecure dev secret with a console warning.
+// 5. In production: throw if nothing set.
 const SECRET = (() => {
   if (typeof process !== 'undefined') {
-    if (process.env.AUTH_COOKIE_SECRET) return process.env.AUTH_COOKIE_SECRET;
-    if (process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET) return process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET;
-    if (process.env.NODE_ENV === 'test') return 'test-secret'; // safe deterministic secret for unit tests
+    const explicit = process.env.AUTH_COOKIE_SECRET || process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET;
+    if (explicit) return explicit;
+    if (process.env.NODE_ENV === 'test') return 'test-secret';
+    if (process.env.NODE_ENV !== 'production') {
+      // Use a fixed (not random) secret so hot reloads do not invalidate cookies every save.
+      const devSecret = 'insecure-dev-secret-change-me';
+      // Only warn once per runtime.
+      interface DevWarnFlag { __AUTH_COOKIE_DEV_WARNED?: boolean }
+      const g = globalThis as DevWarnFlag;
+      if (!g.__AUTH_COOKIE_DEV_WARNED) {
+        console.warn('[authCookie] Using insecure dev fallback secret. Set AUTH_COOKIE_SECRET in .env.local to silence this warning.');
+        g.__AUTH_COOKIE_DEV_WARNED = true;
+      }
+      return devSecret;
+    }
   }
-  throw new Error('AUTH_COOKIE_SECRET environment variable is required for authCookie. Refusing to use insecure default.');
+  throw new Error('AUTH_COOKIE_SECRET environment variable is required for authCookie in production.');
 })();
 
 export interface AuthCookiePayload {
