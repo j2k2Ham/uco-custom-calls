@@ -12,6 +12,13 @@
   --color-brass: #d2a857;
   --color-sky: #7aa6c9;
   --color-sky-80: color-mix(in srgb, var(--color-sky) 80%, transparent);
+  /* Toast theme */
+  --toast-bg: var(--color-camo);
+  --toast-border: var(--color-camo-light);
+  --toast-color-info: var(--color-sky-80);
+  --toast-color-success: #6dd28b;
+  --toast-color-error: #ff776d;
+  --toast-fade-duration: 220ms;
 }
 
 
@@ -19,6 +26,8 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --toast-bg: var(--color-camo);
+    --toast-border: var(--color-camo-light);
   }
 }
 
@@ -120,3 +129,16 @@ body {
 /* Shimmer placeholder */
 .shimmer { position:relative; overflow:hidden; background:linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.16), rgba(255,255,255,0.08)); background-size:200% 100%; animation: shimmerMove 2.2s linear infinite; }
 @keyframes shimmerMove { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+
+/* Toast theming utilities */
+.toast-base { background: var(--toast-bg); border:1px solid var(--toast-border); color: var(--toast-color-info); }
+.toast-success { color: var(--toast-color-success); }
+.toast-error { color: var(--toast-color-error); }
+.toast-fade-enter { opacity:0; transform: translateY(4px) scale(.97); }
+.toast-fade-enter-active { opacity:1; transform: translateY(0) scale(1); transition: opacity var(--toast-fade-duration) ease, transform var(--toast-fade-duration) ease; }
+.toast-fade-exit { opacity:1; transform: translateY(0) scale(1); }
+.toast-fade-exit-active { opacity:0; transform: translateY(6px) scale(.95); transition: opacity var(--toast-fade-duration) ease, transform var(--toast-fade-duration) ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-fade-enter, .toast-fade-enter-active, .toast-fade-exit, .toast-fade-exit-active { transition:none !important; transform:none !important; }
+}

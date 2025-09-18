@@ -161,7 +161,12 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }
               key={t.id}
               onMouseEnter={() => { if (hoverMode === 'extend') extendToast(t.id); else if (hoverMode === 'pause') pauseToast(t.id); }}
               onMouseLeave={() => { if (hoverMode === 'pause') resumeToast(t.id); }}
-              className={`group rounded-xl px-4 py-3 text-sm shadow-lg bg-camo border border-camo-light flex items-start gap-3 leading-snug transition-all duration-200 ease-out will-change-transform relative overflow-hidden ${t.type === 'error' ? 'text-red-300' : t.type === 'success' ? 'text-green-300' : 'text-sky/90'} ${isExiting ? 'opacity-0 translate-y-2 scale-[0.97]' : 'opacity-100 translate-y-0 scale-100'} ${t.paused ? 'ring-1 ring-camo-light/60' : ''} ${focusIndex === idx ? 'outline outline-1 outline-brass' : ''}`}
+              className={`group toast-base rounded-xl px-4 py-3 text-sm shadow-lg flex items-start gap-3 leading-snug will-change-transform relative overflow-hidden transition-all duration-200 ease-out 
+                ${t.type === 'error' ? 'toast-error' : t.type === 'success' ? 'toast-success' : ''}
+                ${t.paused ? 'ring-1 ring-camo-light/60' : ''}
+                ${focusIndex === idx ? 'outline outline-1 outline-brass' : ''}
+                ${isExiting ? 'toast-fade-exit-active' : 'toast-fade-enter-active'}
+              `}
               style={{ transitionDelay: isExiting ? '0ms' : `${delay}ms` }}
               tabIndex={focusIndex === idx ? 0 : -1}
             >
