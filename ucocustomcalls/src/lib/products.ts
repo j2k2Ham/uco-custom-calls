@@ -21,6 +21,7 @@ export const PRODUCTS: Product[] = [
     ratingValue: 4.8,
     ratingCount: 57,
     mpn: "duck-pt-whiskey",
+  gtin13: "0000000000001",
     reviews: [
       { author: 'Alex', rating: 5, body: 'Bright top end and easy feed — my go-to.' },
       { author: 'Jess', rating: 5, body: 'Great control in variable wind.' }
@@ -42,6 +43,7 @@ export const PRODUCTS: Product[] = [
     ratingValue: 4.9,
     ratingCount: 12,
     mpn: "gear-camo-hat"
+  ,gtin13: "0000000000002"
   },
   {
     id: "goose-canada-ocean",
@@ -61,6 +63,7 @@ export const PRODUCTS: Product[] = [
     ratingValue: 4.6,
     ratingCount: 34,
     mpn: "goose-canada-ocean"
+  ,gtin13: "0000000000003"
   },
   {
     id: "lanyard-brass",
@@ -75,6 +78,7 @@ export const PRODUCTS: Product[] = [
     features: ["Cold weather tested", "Multiple call drops", "Brass accent"],
     inStock: true,
     mpn: "lanyard-brass"
+  ,gtin13: "0000000000004"
   }
 ];
 
