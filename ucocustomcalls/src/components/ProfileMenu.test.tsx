@@ -2,6 +2,7 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { ProfileMenu } from './ProfileMenu';
 import { renderWithProviders } from '@/test/providers';
+import userEvent from '@testing-library/user-event';
 
 describe('ProfileMenu', () => {
   beforeEach(() => localStorage.clear());
@@ -105,5 +106,55 @@ describe('ProfileMenu', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/already exists/i);
     });
+  });
+
+  it('restores first name after logout and login using registry', async () => {
+    renderWithProviders(<ProfileMenu />);
+    const btn = screen.getByRole('button', { name: /account menu/i });
+    await userEvent.click(btn);
+    await userEvent.click(screen.getByRole('menuitem', { name: /login/i }));
+    // Switch to create mode
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+  const firstNameField = screen.getByLabelText(/first name/i);
+  const lastNameField = screen.getByLabelText(/last name/i);
+  const emailFieldCreate = screen.getByLabelText(/email/i);
+  const passwordFieldCreate = screen.getByLabelText(/password/i);
+  await userEvent.clear(firstNameField); await userEvent.type(firstNameField, 'Alice');
+  await userEvent.clear(lastNameField); await userEvent.type(lastNameField, 'Smith');
+  await userEvent.clear(emailFieldCreate); await userEvent.type(emailFieldCreate, 'alice@example.com');
+  await userEvent.clear(passwordFieldCreate); await userEvent.type(passwordFieldCreate, 'secret1');
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    // Drawer closed; reopen menu to ensure inline first name rendered
+    await userEvent.click(btn);
+    expect(await screen.findByTestId('user-first-name')).toHaveTextContent('Alice');
+    // Logout from menu
+    await userEvent.click(screen.getByRole('menuitem', { name: /logout/i }));
+    // Login again (no name fields this time)
+    await userEvent.click(btn);
+    await userEvent.click(screen.getByRole('menuitem', { name: /login/i }));
+  const emailFieldLogin = screen.getByLabelText(/email/i);
+  const passwordFieldLogin = screen.getByLabelText(/password/i);
+  await userEvent.clear(emailFieldLogin); await userEvent.type(emailFieldLogin, 'alice@example.com');
+  await userEvent.clear(passwordFieldLogin); await userEvent.type(passwordFieldLogin, 'abcd1');
+    await userEvent.click(screen.getByRole('button', { name: /^login$/i }));
+    // Reopen menu to see inline name again
+    await userEvent.click(btn);
+    expect(await screen.findByTestId('user-first-name')).toHaveTextContent('Alice');
+  });
+
+  it('shows validation error for short password on account creation', async () => {
+    renderWithProviders(<ProfileMenu />);
+    const btn = screen.getByRole('button', { name: /account menu/i });
+    await userEvent.click(btn);
+    await userEvent.click(screen.getByRole('menuitem', { name: /login/i }));
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await userEvent.type(screen.getByLabelText(/first name/i), 'Bob');
+    await userEvent.type(screen.getByLabelText(/last name/i), 'Jones');
+    await userEvent.type(screen.getByLabelText(/email/i), 'bob@example.com');
+    await userEvent.type(screen.getByLabelText(/password/i), '123'); // too short (<6)
+    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/password too short/i);
+    // Ensure user was not logged in (no first name badge)
+    expect(screen.queryByTestId('user-first-name')).toBeNull();
   });
 });

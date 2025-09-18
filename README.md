@@ -134,6 +134,46 @@ Authentication actions previously simulated network latency (300–400ms). Tests
 
 Until real backend integration, DO NOT treat this layer as secure—it's purely a UI convenience.
 
+### Create Account Flow & User Registry
+
+In addition to login + SSO stubs, a lightweight client-side account creation path is provided. When a user selects "Create account" in the profile drawer, the following occurs:
+
+1. User enters first name, last name, email, password (password rule: minimum 6 characters; login-only path still allows >=4 for legacy test speed but new accounts require >=6).
+2. Email is validated with a simple `user@host.tld` regex; password rule enforced (`length >= 6`).
+3. A registry of locally created users is persisted in `localStorage` under the key `uco.users` (object map keyed by lower‑cased email).
+4. Duplicate prevention: attempting to create an account with an email already present in the registry throws `Account already exists` and leaves the drawer open displaying the error.
+5. On successful creation, the new user is automatically logged in and also stored as the active user (`uco.user`).
+
+Registry Shape (simplified):
+
+```jsonc
+{
+  "someone@example.com": {
+    "id": "u_c29tZW9uZUBleGFtcGxlLmNvbQ==",
+    "email": "someone@example.com",
+    "name": "Jane Doe",
+    "provider": "local"
+  }
+}
+```
+
+First name display & greeting: After login or account creation, the first token of `name` (split on space) is rendered inline next to the profile icon and the account dropdown now includes a lightweight greeting line (`Welcome, Jane`). If `name` is absent (e.g., SSO stub without enriched profile) the email remains in the aria-label and the greeting omits the comma/name.
+
+Re-login name restoration: When logging in with email/password, if a matching entry exists in the registry, the previously stored `name` is restored even if the login form does not collect names (i.e. future flows could omit name fields).
+
+Testing Notes:
+
+- `ProfileMenu.test.tsx` covers: login, SSO, persistence across remount, account creation (including name display), and duplicate prevention.
+- Artificial network delays are bypassed under `NODE_ENV==='test'` via `SKIP_DELAY` so tests remain fast.
+
+Planned / Optional Enhancements:
+
+- Additional password strength feedback (entropy / character mix) – current rule is minimal to keep UX friction low.
+- Friendly greeting panel (e.g., "Welcome back, Jane") inside the drawer or menu.
+- Edit profile support (rename), which would update both `uco.user` and the registry entry.
+
+Security Reminder: This registry is entirely client-side and should NOT be used for anything beyond local prototyping. Replace with a real backend (and hashed passwords) before shipping.
+
 ## Custom Inquiry System
 
 The `/custom` page provides an AJAX form posting to `/api/contact`.
