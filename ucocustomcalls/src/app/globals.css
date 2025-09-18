@@ -76,6 +76,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeInScale, .animate-slideDown { animation: none !important; }
+  .will-change-transform { will-change: auto; }
+  .toast-reduced-motion { transition: none !important; animation: none !important; }
 }
 
 /* Ambient hero effects */

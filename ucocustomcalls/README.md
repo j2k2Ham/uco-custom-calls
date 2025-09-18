@@ -370,6 +370,76 @@ Extending:
 - Add queue limit or collapse duplicates by hashing message.
 - Support action buttons (e.g., Undo) by extending Toast shape.
 
+#### Toast Animations & Enhancements
+
+Additional UX upgrades have been layered on top of the base toast system:
+
+- Entry: Each toast fades, slightly scales, and slides upward into place with a subtle stagger (`~60ms` per item, capped at `300ms`).
+- Exit: Dismissal (auto or manual) triggers a quick fade / slide + slight scale down before removal (200–250ms window).
+- Progress Indicator: A brass bar animates from full width to zero over the toast lifetime; hovering a toast visually emphasizes the bar color (no pause logic yet).
+- Stagger: Achieved via inline `transitionDelay` based on positional index for natural cascading.
+- Reduced Motion: Under `prefers-reduced-motion: reduce`, transitions & keyframe-driven motion are disabled (`toast-reduced-motion` fallbacks) to respect user settings.
+- Accessibility: Live region still handles announcement; exit animation is short to avoid confusing screen reader users with lingering off‑screen content.
+
+Planned / Optional Future Tweaks:
+
+1. Hover-to-pause (store remaining time & adjust width transition).
+2. Queue cap + collapse duplicate messages (hash by message + type).
+3. Action slot (extend `Toast` interface with an `action?: { label: string; onClick: () => void }`).
+4. Theming via CSS variables (`--toast-bg`, `--toast-border`, `--toast-info-color`, etc.) for runtime theme swaps.
+5. Multi-origin grouping (e.g., system vs user actions) with subtle iconography.
+
+Implementation Notes:
+
+- Exit path uses a two-phase approach: mark as exiting (adds exit classes) then remove after a 250ms timeout.
+- Progress bar uses `transition: width <timeout>ms linear`; on exit it collapses quickly (`width 0.18s`).
+- Stagger delay is applied only to entry transitions; exit occurs immediately for responsiveness.
+
+Extending in Code:
+
+Add an action button example:
+
+```tsx
+push('Profile reverted', {
+  type: 'info',
+  timeout: 8000,
+  // Future shape: action: { label: 'Undo', onClick: () => revertProfile() }
+});
+```
+
+If adding hover‑pause, you would capture `mouseenter`/`mouseleave`, compute elapsed time, clear the current removal timer, and re‑set with remaining duration while also adjusting the progress bar transition.
+
+#### Advanced Toast Features (Queue, Collapse, Keyboard)
+
+New capabilities extend the base system:
+
+- Duplicate Collapsing: Re‑push of same `message` + `type` increments a counter (displayed as ×N) and refreshes lifetime instead of adding a new line.
+- Queue + Max Visible: Only 4 toasts render simultaneously; additional toasts enqueue and promote as space frees.
+- Hover Extend: Each hover adds 15% of the original timeout (capped at 2× base). Prevents accidental expiration while reading without fully pausing.
+- Action Button: Optional `action: { label, onClick }` executes callback then dismisses.
+- Keyboard Navigation: Focus container (tab) then use Arrow Up/Down, Home/End to move; Delete dismisses focused toast.
+
+API Notes:
+
+```ts
+push('Saved draft', { type: 'success', timeout: 5000, action: { label: 'Undo', onClick: revert } });
+```
+
+Behavioral Details:
+
+1. Lifetime refresh on duplicate uses new (or existing) provided timeout value.
+2. Extension math preserves remaining proportion by recalculating `createdAt`.
+3. Queue promotion occurs immediately after a visible toast exits (checked each interval and on removal).
+4. Keyboard outline styling leverages `outline-brass` for clear focus affordance.
+5. Cap of 2× original prevents indefinite persistence from excessive hovers.
+
+Potential Future Extensions:
+
+- Pause on Hover Mode (alternative to extend) behind config flag.
+- Global dismiss all key (e.g., Shift+Delete) or button.
+- Screen reader region grouping (separate polite/assertive lanes) by severity.
+- Theming via CSS vars enabling dynamic light/dark accent swap.
+
 ### Turbopack Fallback & CSS Crash Troubleshooting
 
 On some Windows environments an internal Turbopack crash (`TurbopackInternalError` while processing `globals.css`) can surface as:
