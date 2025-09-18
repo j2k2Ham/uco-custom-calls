@@ -152,7 +152,7 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }
   return (
     <ToastCtx.Provider value={ctxValue}>
       {children}
-      <div aria-live="polite" aria-atomic="false" className="fixed bottom-4 right-4 space-y-2 z-50 max-w-sm outline-none" tabIndex={0} onKeyDown={handleKey}>
+  <div aria-live="polite" aria-atomic="false" className="fixed bottom-4 right-4 space-y-2 z-50 max-w-sm outline-none" tabIndex={0} onKeyDown={handleKey} role="group" aria-label="Notifications">
         {toasts.map((t, idx) => {
           const isExiting = exiting[t.id];
           const delay = Math.min(idx * 60, 300);
@@ -168,6 +168,7 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }
               className={`group toast-base rounded-xl px-4 py-3 text-sm shadow-lg flex items-start gap-3 leading-snug will-change-transform relative overflow-hidden transition-all duration-200 ease-out ${variantClass} ${t.paused ? 'ring-1 ring-camo-light/60' : ''} ${focusIndex === idx ? 'outline outline-1 outline-brass' : ''} ${isExiting ? 'toast-fade-exit-active' : 'toast-fade-enter-active'}`}
               style={{ transitionDelay: isExiting ? '0ms' : `${delay}ms` }}
               tabIndex={focusIndex === idx ? 0 : -1}
+              role="status"
             >
               <span className="flex-1">{t.message}{t.count > 1 && <sup className="ml-1 text-xs text-sky/70">×{t.count}</sup>}</span>
               {t.action && !isExiting && (

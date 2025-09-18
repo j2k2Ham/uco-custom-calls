@@ -12,8 +12,9 @@ interface ProductPageParams { readonly slug: string }
 
 export const dynamicParams = true;
 
-export async function generateMetadata({ params }: any): Promise<Metadata> { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const resolved: ProductPageParams = await params;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const resolved = await Promise.resolve(params as ProductPageParams);
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return { title: 'Product Not Found' };
   const title = product.seo?.metaTitle || product.title;
@@ -38,8 +39,9 @@ export async function generateMetadata({ params }: any): Promise<Metadata> { // 
   };
 }
 
-export default async function ProductPage({ params }: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const resolved: ProductPageParams = await params;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function ProductPage({ params }: any) {
+  const resolved = await Promise.resolve(params as ProductPageParams);
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return notFound();
 
