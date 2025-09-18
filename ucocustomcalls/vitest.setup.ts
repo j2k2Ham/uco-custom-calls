@@ -9,7 +9,14 @@ vi.mock('@headlessui/react', async (orig) => {
 	interface DialogProps { open: boolean; onClose: () => void; children: React.ReactNode }
 	const DialogRoot = ({ open, onClose, children }: DialogProps) => {
 		if (!open) return null;
-		return React.createElement('div', { 'data-testid': 'mock-dialog', onClick: onClose }, children);
+		return React.createElement(
+			'div',
+			{ 'data-testid': 'mock-dialog' },
+			[
+				React.createElement('div', { key: 'backdrop', 'data-testid': 'mock-backdrop', onClick: onClose }),
+				React.createElement('div', { key: 'panel' }, children)
+			]
+		);
 	};
 	DialogRoot.displayName = 'MockDialog';
 	const DialogTitle = ({ children }: { children: React.ReactNode }) => React.createElement('h2', null, children);

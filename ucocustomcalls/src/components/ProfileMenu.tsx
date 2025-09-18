@@ -13,8 +13,9 @@ export function ProfileMenu() {
   return (
     <>
       <div className="relative">
-        <button aria-haspopup="menu" aria-expanded={menuOpen} aria-label="Account menu" onClick={() => setMenuOpen(o=>!o)} className="p-2 rounded-md hover:bg-camo-light">
+        <button aria-haspopup="menu" aria-expanded={menuOpen} aria-label={user ? `Account menu for ${user.name || user.email}` : 'Account menu'} onClick={() => setMenuOpen(o=>!o)} className="p-2 rounded-md hover:bg-camo-light flex items-center gap-2">
           <UserCircleIcon className="w-6 h-6" />
+          {user?.name && <span className="text-sm max-w-[8rem] truncate" data-testid="user-first-name">{user.name.split(' ')[0]}</span>}
         </button>
         {menuOpen && (
           <ul role="menu" className="absolute top-0 left-full ml-2 w-44 bg-camo border border-camo-light rounded shadow-lg py-1 z-50">
@@ -36,7 +37,7 @@ export function ProfileMenu() {
           </ul>
         )}
       </div>
-      <LoginDrawer mode={mode} setMode={setMode} open={loginOpen} onClose={() => setLoginOpen(false)} />
+  <LoginDrawer mode={mode} setMode={(m)=>{ setMode(m); if(!loginOpen) setLoginOpen(true); }} open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }

@@ -19,6 +19,7 @@ interface UserContextShape {
 
 const UserCtx = createContext<UserContextShape | null>(null);
 const STORAGE_KEY = 'uco.user';
+const USERS_KEY = 'uco.users'; // registry of created local users
 const SKIP_DELAY = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.NEXT_PUBLIC_AUTH_DELAY === '0');
 
 function fakeDelay(ms: number) {
@@ -41,6 +42,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  function loadUsers(): Record<string, User> {
+    try {
+      const raw = localStorage.getItem(USERS_KEY);
+      if (raw) return JSON.parse(raw) as Record<string, User>;
+    } catch { /* ignore */ }
+    return {};
+  }
+
+  function persistUsers(map: Record<string, User>) {
+    try { localStorage.setItem(USERS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+  }
+
   function persist(next: User | null) {
     if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     else localStorage.removeItem(STORAGE_KEY);
@@ -51,7 +64,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!SKIP_DELAY) await fakeDelay(300);
     if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { setLoading(false); throw new Error('Invalid email'); }
     if (password.length < 4) { setLoading(false); throw new Error('Password too short'); }
-    const next: User = { id: `u_${btoa(email)}`, email, provider: 'local' };
+    const users = loadUsers();
+  const existing = users[email.toLowerCase()] as User | undefined;
+  const next: User = existing ?? { id: `u_${btoa(email)}`, email, provider: 'local' };
     setUser(next); persist(next); setLoading(false); return next;
   }, []);
 
@@ -73,8 +88,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!firstName.trim() || !lastName.trim()) { setLoading(false); throw new Error('Name required'); }
     if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { setLoading(false); throw new Error('Invalid email'); }
     if (password.length < 6) { setLoading(false); throw new Error('Password too short'); }
+    const users = loadUsers();
+    if (users[email.toLowerCase()]) { setLoading(false); throw new Error('Account already exists'); }
     const name = `${firstName.trim()} ${lastName.trim()}`.trim();
     const next: User = { id: `u_${btoa(email)}`, email, name, provider: 'local' };
+    users[email.toLowerCase()] = next;
+    persistUsers(users);
     setUser(next); persist(next); setLoading(false); return next;
   }, []);
 

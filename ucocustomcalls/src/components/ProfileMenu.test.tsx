@@ -55,4 +55,55 @@ describe('ProfileMenu', () => {
     fireEvent.click(screen.getByLabelText(/account menu/i));
     expect(await screen.findByRole('menuitem', { name: /logout/i })).toBeInTheDocument();
   });
+
+  it('allows creating an account and shows first name next to icon', async () => {
+    renderWithProviders(<ProfileMenu />);
+    fireEvent.click(screen.getByLabelText(/account menu/i));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /login/i }));
+    await screen.findByRole('heading', { name: /login/i });
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await screen.findByRole('heading', { name: /create account/i });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Jane' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
+    fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: 'jane@example.com' } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'secret1' } });
+    fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await waitFor(() => {
+      // Drawer closed; open menu again
+      fireEvent.click(screen.getByLabelText(/account menu for jane doe|account menu/i));
+    });
+    // First name chip should be visible
+    expect(screen.getByTestId('user-first-name').textContent).toBe('Jane');
+  });
+
+  it('prevents duplicate account creation', async () => {
+    renderWithProviders(<ProfileMenu />);
+    fireEvent.click(screen.getByLabelText(/account menu/i));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /login/i }));
+    await screen.findByRole('heading', { name: /login/i });
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await screen.findByRole('heading', { name: /create account/i });
+    // First creation
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Smith' } });
+    fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'secret1' } });
+    fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await waitFor(() => fireEvent.click(screen.getByLabelText(/account menu/i)));
+    // Logout to attempt duplicate
+    fireEvent.click(screen.getByRole('menuitem', { name: /logout/i }));
+    fireEvent.click(screen.getByLabelText(/account menu/i));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /login/i }));
+    await screen.findByRole('heading', { name: /login/i });
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await screen.findByRole('heading', { name: /create account/i });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Johnny' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Smith' } });
+    fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'another' } });
+    fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/already exists/i);
+    });
+  });
 });
