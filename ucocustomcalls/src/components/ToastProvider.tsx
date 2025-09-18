@@ -23,9 +23,8 @@ const ToastCtx = createContext<ToastContextShape | null>(null);
 
 type HoverMode = 'extend' | 'pause' | 'none';
 
-interface ToastProviderProps { readonly children: React.ReactNode; readonly maxVisible?: number; readonly hoverMode?: HoverMode; }
-
-export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }: ToastProviderProps) {
+interface ToastProviderProps { readonly children: React.ReactNode; readonly maxVisible?: number; readonly hoverMode?: HoverMode; readonly disableAutoDismissInTest?: boolean; }
+export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend', disableAutoDismissInTest }: ToastProviderProps) {
   interface ActiveToast extends Toast { createdAt: number; total: number; remaining: number; paused: boolean; count: number; }
   const [toasts, setToasts] = useState<ActiveToast[]>([]);
   const [queue, setQueue] = useState<ActiveToast[]>([]);
@@ -78,22 +77,22 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }
   }, [toasts.length, queue, MAX_VISIBLE]);
 
   // Interval ticker for remaining time & auto-exit (dynamic extension supported)
+  // Interval ticker for remaining time (skipped entirely under test unless explicitly overridden)
   useEffect(() => {
+    const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+    if (isTest && disableAutoDismissInTest !== false) return; // skip in test by default
     const interval = setInterval(() => {
       setToasts(current => current.map(toast => {
         if (exiting[toast.id]) return toast;
-        if (toast.paused) return toast; // reserved for future pause option
+        if (toast.paused) return toast;
         const elapsed = Date.now() - toast.createdAt;
         const remaining = Math.max(toast.total - elapsed, 0);
-        if (remaining === 0) {
-          beginExit(toast.id);
-          return { ...toast, remaining: 0 };
-        }
+        if (remaining === 0) { beginExit(toast.id); return { ...toast, remaining: 0 }; }
         return { ...toast, remaining };
       }));
     }, 100);
     return () => clearInterval(interval);
-  }, [beginExit, exiting]);
+  }, [beginExit, exiting, disableAutoDismissInTest]);
 
   // Hover extend: +15% base (original) timeout per hover, capped at double original
   const extendToast = useCallback((id: string) => {

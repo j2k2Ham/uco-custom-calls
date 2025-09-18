@@ -21,7 +21,7 @@ export function ProfileMenu() {
           {user?.name && <span className="text-sm max-w-[8rem] truncate" data-testid="user-first-name">{user.name.split(' ')[0]}</span>}
         </button>
         {menuOpen && (
-          <ul className="absolute top-full left-0 mt-2 w-52 bg-camo border border-camo-light rounded shadow-lg py-2 z-50" aria-label="Account menu">
+          <ul className="absolute top-full left-0 mt-2 w-52 bg-camo border border-camo-light rounded shadow-lg py-2 z-50" role="menu">
             {!user && (
               <li>
                 <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { setMode('login'); setMenuOpen(false); setLoginOpen(true); }}>Login</button>
@@ -82,8 +82,8 @@ function LoginDrawer({ open, onClose, mode, setMode }: { readonly open: boolean;
   return (
   <Dialog open={open} onClose={onClose} className="relative z-50" aria-labelledby="login-drawer-title">
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-      <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-camo p-6 shadow-2xl flex flex-col">
-  <div id="login-drawer-title" className="text-lg font-semibold">{mode === 'login' ? 'Login' : 'Create Account'}</div>
+    <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-camo p-6 shadow-2xl flex flex-col">
+  <h2 id="login-drawer-title" className="text-lg font-semibold">{mode === 'login' ? 'Login' : 'Create Account'}</h2>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {mode === 'create' && (
             <div className="grid grid-cols-2 gap-4">

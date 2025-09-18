@@ -4,11 +4,10 @@
 
 // Secret resolution: prefer process.env.AUTH_COOKIE_SECRET (node / server), fallback to NEXT_PUBLIC, else throw error.
 const SECRET = (() => {
-  if (typeof process !== 'undefined' && process.env.AUTH_COOKIE_SECRET) {
-    return process.env.AUTH_COOKIE_SECRET;
-  }
-  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET) {
-    return process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET;
+  if (typeof process !== 'undefined') {
+    if (process.env.AUTH_COOKIE_SECRET) return process.env.AUTH_COOKIE_SECRET;
+    if (process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET) return process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET;
+    if (process.env.NODE_ENV === 'test') return 'test-secret'; // safe deterministic secret for unit tests
   }
   throw new Error('AUTH_COOKIE_SECRET environment variable is required for authCookie. Refusing to use insecure default.');
 })();

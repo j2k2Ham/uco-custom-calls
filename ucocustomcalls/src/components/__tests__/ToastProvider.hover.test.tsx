@@ -5,7 +5,7 @@ import { ToastProvider, useToast } from '../ToastProvider';
 
 function Push({ mode }: { mode: 'extend' | 'pause' | 'none' }) {
   return (
-    <ToastProvider hoverMode={mode} maxVisible={4}>
+    <ToastProvider hoverMode={mode} maxVisible={4} disableAutoDismissInTest={false}>
       <Inner />
     </ToastProvider>
   );
