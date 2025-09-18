@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Product, formatPriceFromCents, getPriceCents } from "@/types/product";
 import { Badge } from "./Badge";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { readonly product: Product }) {
   return (
     <li className="rounded-lg overflow-hidden border border-camo-light hover:border-brass/60 transition">
       <Link href={`/products/${product.slug}`} className="block">

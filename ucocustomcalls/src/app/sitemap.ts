@@ -1,9 +1,12 @@
 import { MetadataRoute } from "next";
-import { PRODUCTS } from "@/lib/products";
+import { PRODUCTS, CATEGORIES } from "@/lib/products";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const items = PRODUCTS.map(p => ({ url: `https://www.ucocustomcalls.com/products/${p.slug}` }));
-  const statics = ["/", "/about", "/contact", "/custom", "/sound-files", "/category/duck", "/category/goose", "/category/lanyards"]
-    .map(url => ({ url: `https://www.ucocustomcalls.com${url}` }));
-  return [...statics, ...items];
+  const base = 'https://www.ucocustomcalls.com';
+  const now = new Date();
+  const staticPaths = ['/', '/products', '/contact', '/custom'];
+  const staticEntries = staticPaths.map(p => ({ url: base + p, lastModified: now }));
+  const productEntries = PRODUCTS.map(p => ({ url: `${base}/products/${p.slug}`, lastModified: now }));
+  const categoryEntries = CATEGORIES.map(c => ({ url: `${base}/category/${c.handle}`, lastModified: now }));
+  return [...staticEntries, ...productEntries, ...categoryEntries];
 }

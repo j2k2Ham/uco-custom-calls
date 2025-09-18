@@ -1,4 +1,15 @@
 import { CustomInquiryForm } from '@/components/CustomInquiryForm';
+import { contactPageJsonLD } from '@/lib/structuredData';
+import type { Metadata } from 'next';
+
+const customTitle = 'Custom Calls & Lanyards Inquiry | UCO Custom Calls';
+const customDescription = 'Request custom acrylic duck & goose calls or paracord lanyards. Colorways, engravings, reeds & more.';
+export const metadata: Metadata = {
+  title: customTitle,
+  description: customDescription,
+  openGraph: { type: 'website', title: customTitle, description: customDescription, url: 'https://ucocustomcalls.com/custom' },
+  twitter: { card: 'summary', title: customTitle, description: customDescription }
+};
 
 export default function CustomPage() {
   return (
@@ -6,13 +17,11 @@ export default function CustomPage() {
       <script
         type="application/ld+json"
         suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'ContactPage',
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageJsonLD({
           name: 'Custom Calls & Lanyards Inquiry',
           description: 'Custom acrylic duck and goose calls and paracord lanyards – request engraving, colorways, reed setup, and lanyard options.',
-          contactPoint: [{ '@type': 'ContactPoint', email: 'and360900@gmail.com', contactType: 'customer support', availableLanguage: ['en'] }]
-        }) }}
+          email: 'and360900@gmail.com'
+        })) }}
       />
       <h1 className="text-3xl font-semibold">Custom Calls</h1>
       <p className="mt-3 text-sky">

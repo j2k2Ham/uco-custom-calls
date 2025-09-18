@@ -2,16 +2,22 @@
 import { Dialog } from "@headlessui/react";
 import Link from "next/link";
 import { useCart } from "@/hooks/useCart";
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Price } from "./Price";
 
-export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CartDrawer({ open, onClose }: { readonly open: boolean; readonly onClose: () => void }) {
   const { items, remove, total, clear } = useCart();
 
   return (
     <Dialog open={open} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-camo p-5 shadow-2xl">
-        <Dialog.Title className="text-xl font-semibold">Your Cart</Dialog.Title>
+      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-camo p-5 shadow-2xl flex flex-col">
+        <div className="flex items-start justify-between gap-4">
+          <div id="cart-drawer-title" className="text-xl font-semibold">Your Cart</div>
+          <button aria-label="Close cart" onClick={onClose} className="p-2 rounded hover:bg-camo-light">
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
         <ul className="mt-4 space-y-3 max-h-[60vh] overflow-auto pr-2">
           {items.length === 0 && <li className="text-sky/80">Cart is empty.</li>}
           {items.map(i => (

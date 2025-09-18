@@ -34,4 +34,11 @@ test.describe('SEO structured data', () => {
     expect(breadcrumb).not.toBeNull();
     expect(breadcrumb!.itemListElement.length).toBe(3);
   });
+
+  test('category page has breadcrumb of length 2', async ({ page }) => {
+    await page.goto('/category/duck');
+    const breadcrumb = await extractJsonLd(page, 'BreadcrumbList');
+    expect(breadcrumb).not.toBeNull();
+    expect(breadcrumb!.itemListElement.length).toBe(2);
+  });
 });

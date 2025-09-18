@@ -14,7 +14,7 @@
     "build:ci": "next build",
     "diagnose:turbopack": "next build --turbopack || echo Turbopack build failed (expected on Windows)",
     "verify:build": "node scripts/verify-build.mjs",
-  "diagnose:postcss": "node scripts/diagnose-postcss.mjs",
+    "diagnose:postcss": "node scripts/diagnose-postcss.mjs",
     "lint": "eslint --cache --cache-location .cache/eslint",
     "lint:fix": "eslint --cache --cache-location .cache/eslint --fix",
     "lint:clear-cache": "rimraf .cache/eslint",
@@ -30,26 +30,33 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
+    "lighthouse": "npx lighthouse http://localhost:3000 --view --only-categories=performance,seo,accessibility,best-practices",
+    "lighthouse:ci": "npx lighthouse http://localhost:3000 --quiet --output=json --output-path=./.lighthouse/report.json --only-categories=performance,seo",
+    "assets:unused": "node scripts/find-unused-images.mjs",
     "prepare": "husky install"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.8",
     "@heroicons/react": "^2.2.0",
     "autoprefixer": "^10.4.21",
+    "bcryptjs": "^2.4.3",
     "next": "^15.5.3",
+    "nodemailer": "^6.9.11",
     "postcss": "^8.5.6",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "nodemailer": "^6.9.11"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.48.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/jest-axe": "^3.5.9",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/testing-library__jest-dom": "^6.0.0",
@@ -66,13 +73,13 @@
     "stylelint-config-standard-scss": "^13.0.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5",
-    "vitest": "^3.2.4",
-    "@playwright/test": "^1.48.2",
-    "@types/nodemailer": "^6.4.14"
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "peerDependencyRules": {
-      "ignoreMissing": ["@playwright/test"]
+      "ignoreMissing": [
+        "@playwright/test"
+      ]
     }
   }
 }

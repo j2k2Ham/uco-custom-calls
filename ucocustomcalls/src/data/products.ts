@@ -1,7 +1,7 @@
 // Placeholder product catalog for UCO Custom Calls rebuild.
 // Replace placeholder names, descriptions, and pricing with real data.
 
-export type ProductCategory = 'duck-calls' | 'goose-calls' | 'lanyards' | 'accessories';
+export type ProductCategory = 'duck-calls' | 'goose-calls' | 'lanyards' | 'gear';
 
 export interface ProductImage {
   file: string; // relative to /public/images
@@ -100,11 +100,11 @@ export const products: Product[] = [
     images: imagePool.lanyard.slice(3,6).map((f,i) => ({ file: f, primary: i===0 }))
   }),
   p({
-    id: 'accessory-gallery-pack',
-    name: 'Accessory Gallery Pack (Placeholder)',
-    category: 'accessories',
+  id: 'gear-gallery-pack',
+  name: 'Gear Gallery Pack (Placeholder)',
+  category: 'gear',
     priceCents: 1999,
-    shortDescription: 'Assorted accessory images to be curated.',
+  shortDescription: 'Assorted gear images to be curated.',
     images: imagePool.misc.slice(0,4).map((f,i) => ({ file: f, primary: i===0 }))
   })
 ];

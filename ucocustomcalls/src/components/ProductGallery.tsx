@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import type { Product } from "@/types/product";
 
-export function ProductGallery({ product }: { product: Product }) {
+export function ProductGallery({ product }: { readonly product: Product }) {
   const [index, setIndex] = useState(0);
   const liveRef = useRef<HTMLDivElement | null>(null);
 
@@ -31,7 +31,7 @@ export function ProductGallery({ product }: { product: Product }) {
       </div>
       <div aria-live="polite" aria-atomic="true" className="sr-only" ref={liveRef} />
       {product.images.length > 1 && (
-        <ul className="mt-3 grid grid-cols-5 gap-2" role="listbox" aria-label="Product Images">
+        <ul className="mt-3 grid grid-cols-5 gap-2" aria-label="Product images thumbnails">
           {product.images.map((img, i) => {
             const active = i === index;
             return (
@@ -43,8 +43,7 @@ export function ProductGallery({ product }: { product: Product }) {
                     if (e.key === 'ArrowRight') select((i + 1) % product.images.length);
                     if (e.key === 'ArrowLeft') select((i - 1 + product.images.length) % product.images.length);
                   }}
-                  aria-selected={active}
-                  role="option"
+                  aria-current={active ? 'true' : undefined}
                   className={[
                     "relative aspect-square border rounded overflow-hidden focus:outline-none focus:ring-2 focus:ring-brass",
                     active ? "border-brass" : "border-camo-light hover:border-brass/60"

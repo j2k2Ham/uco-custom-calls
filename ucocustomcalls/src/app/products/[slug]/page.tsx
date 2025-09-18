@@ -2,18 +2,19 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PRODUCTS } from "@/lib/products";
 import { productUrl, categoryUrl, productsListingUrl } from '@/lib/urls';
+import { productJsonLD, breadcrumbJsonLD } from '@/lib/structuredData';
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { formatPriceFromCents, getPriceCents } from "@/types/product";
 import { ProductGallery } from "@/components/ProductGallery";
+import { CategoryButtons } from "@/components/CategoryButtons";
 
-interface ProductPageParams { slug: string }
-interface ProductPageProps { params: ProductPageParams | Promise<ProductPageParams> }
+interface ProductPageParams { readonly slug: string }
 
 export const dynamicParams = true;
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const resolved = await params;
+export async function generateMetadata({ params }: { params: ProductPageParams }): Promise<Metadata> {
+  const resolved = await Promise.resolve(params);
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return { title: 'Product Not Found' };
   const title = product.seo?.metaTitle || product.title;
@@ -29,12 +30,21 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       images,
       url: productUrl(product.slug)
     },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description
+    },
     alternates: { canonical: `/products/${product.slug}` }
   };
 }
 
+interface ProductPageProps {
+  readonly params: ProductPageParams;
+}
+
 export default async function ProductPage({ params }: ProductPageProps) {
-  const resolved = await params;
+  const resolved = await Promise.resolve(params);
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return notFound();
 
@@ -44,51 +54,43 @@ export default async function ProductPage({ params }: ProductPageProps) {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify((() => {
-            const base: Record<string, unknown> = {
-              '@context': 'https://schema.org/',
-              '@type': 'Product',
-              name: product.title,
-              description: product.description,
-              image: product.images.map(i => i.src),
-              sku: product.id,
-              offers: {
-                '@type': 'Offer',
-                availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-                priceCurrency: 'USD',
-                price: (getPriceCents(product) / 100).toFixed(2),
-                url: productUrl(product.slug),
-                itemCondition: 'https://schema.org/NewCondition'
-              }
-            };
-            if (typeof product.ratingValue === 'number' && typeof product.ratingCount === 'number') {
-              base.aggregateRating = {
-                '@type': 'AggregateRating',
-                ratingValue: product.ratingValue,
-                reviewCount: product.ratingCount,
-                bestRating: product.ratingBest ?? 5
-              };
-            }
-            return base;
-          })())
+          __html: JSON.stringify(productJsonLD({
+            name: product.title,
+            description: product.description,
+            sku: product.id,
+            image: product.images.map(i => i.src),
+            priceCents: getPriceCents(product),
+            availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: productUrl(product.slug),
+            ratingValue: product.ratingValue,
+            ratingCount: product.ratingCount,
+            ratingBest: product.ratingBest,
+            brandName: 'UCO Custom Calls',
+            sellerName: 'UCO Custom Calls',
+            category: product.category,
+            priceValidUntil: new Date(Date.now() + 1000*60*60*24*90).toISOString().split('T')[0]
+            , mpn: product.mpn,
+            reviews: product.reviews?.map(r => ({ author: r.author, rating: r.rating, body: r.body, date: r.date }))
+          }))
         }}
       />
       <script
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Products', item: productsListingUrl() },
-              { '@type': 'ListItem', position: 2, name: product.category, item: categoryUrl(product.category) },
-              { '@type': 'ListItem', position: 3, name: product.title, item: productUrl(product.slug) }
-            ]
-          })
+          __html: JSON.stringify(breadcrumbJsonLD([
+            { name: 'Products', url: productsListingUrl() },
+            { name: product.category, url: categoryUrl(product.category) },
+            { name: product.title, url: productUrl(product.slug) }
+          ]))
         }}
       />
-      <div><ProductGallery product={product} /></div>
+      <div>
+        <ProductGallery product={product} />
+        <div className="mt-8">
+          <CategoryButtons />
+        </div>
+      </div>
 
       <div className="mt-8 lg:mt-0">
         <h1 className="text-3xl font-semibold">{product.title}</h1>

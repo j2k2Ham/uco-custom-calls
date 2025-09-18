@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
-import { CartProvider } from '@/hooks/useCart';
+import { renderWithProviders } from '@/test/providers';
 import React from 'react';
 import { vi } from 'vitest';
 
@@ -9,23 +9,16 @@ vi.mock('./CartDrawer', () => ({
   CartDrawer: ({ open }: { open: boolean }) => (open ? <div data-testid="drawer-open" /> : null)
 }));
 
-function Wrapper() {
-  return (
-    <CartProvider>
-      <Header />
-    </CartProvider>
-  );
-}
 
 describe('Header', () => {
   it('renders brand link and nav region', () => {
-    render(<Wrapper />);
+  renderWithProviders(<Header />);
     expect(screen.getByRole('link', { name: /UCO Custom Calls/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/open cart/i)).toBeInTheDocument();
   });
 
   it('opens cart drawer when cart button clicked', () => {
-    render(<Wrapper />);
+  renderWithProviders(<Header />);
     fireEvent.click(screen.getByLabelText(/open cart/i));
     expect(screen.getByTestId('drawer-open')).toBeInTheDocument();
   });
