@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { signAuthCookie } from '@/lib/authCookie';
 
 export type User = {
   id: string;
@@ -57,13 +58,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   function persist(next: User | null) {
     if (next) {
-      const serialized = JSON.stringify({ id: next.id, email: next.email, name: next.name, provider: next.provider });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      // Plain dev cookie (NOT secure). Expires in 7 days.
-      try {
-        const expires = new Date(Date.now() + 7*24*60*60*1000).toUTCString();
-        document.cookie = `uco_auth=${encodeURIComponent(serialized)}; Path=/; Expires=${expires}`;
-      } catch { /* ignore cookie failures */ }
+      (async () => {
+        try {
+          const payload = { id: next.id, email: next.email, name: next.name, provider: next.provider };
+          const signed = await signAuthCookie(payload);
+          const expires = new Date(Date.now() + 7*24*60*60*1000).toUTCString();
+          document.cookie = `uco_auth=${signed}; Path=/; Expires=${expires}`;
+        } catch { /* ignore */ }
+      })();
     } else {
       localStorage.removeItem(STORAGE_KEY);
       try { document.cookie = 'uco_auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT'; } catch { /* ignore */ }
