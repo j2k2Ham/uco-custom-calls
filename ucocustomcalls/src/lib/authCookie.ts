@@ -77,7 +77,6 @@ interface ServerResponseLike {
   getHeader?: (k: string) => unknown;
   cookies?: unknown;
 }
-
 export function setAuthCookieServer(res: ServerResponseLike, payload: AuthCookiePayload) {
   // We still produce the same signed value; consumer (API route) can call this.
   return (async () => {
