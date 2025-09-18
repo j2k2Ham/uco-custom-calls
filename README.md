@@ -159,6 +159,29 @@ Registry Shape (simplified):
 
 First name display & greeting: After login or account creation, the first token of `name` (split on space) is rendered inline next to the profile icon and the account dropdown now includes a lightweight greeting line (`Welcome, Jane`). If `name` is absent (e.g., SSO stub without enriched profile) the email remains in the aria-label and the greeting omits the comma/name.
 
+### My Account Page
+
+Path: `/account` – Displays a simple authenticated view of the current user (email, name if present, provider). If the visitor is not logged in a guidance message with a link back home is shown. Navigation occurs via the "My Account" item in the profile dropdown (rendered as a Next.js `Link`). This page is a starting point for future enhancements (profile editing, order history, password changes). Client-only context is used; server protection would require replacing the mock auth layer with a real session mechanism.
+
+#### Development Auth Cookie & Middleware
+
+- On login / create account a plain (UNSIGNED) cookie `uco_auth` is written containing a JSON payload: `{ id, email, name, provider }`.
+- Cookie lifetime: 7 days; cleared on logout.
+- A simple `middleware.ts` checks for `uco_auth` when requesting `/account` and redirects to `/` with `?from=account` if absent. This is purely illustrative and not secure.
+
+Security Note: Do NOT ship this unsandboxed cookie to production; implement signed / httpOnly / secure session tokens instead.
+
+#### Editing Profile (Name Only)
+
+The Account page now includes an inline form to update first and last name:
+
+1. Pre-filled from existing `user.name` (split into first token + remainder).
+2. Submits via `updateProfile` exposed by `useUser` context.
+3. Updates local state, persistent storage (`uco.user`), user registry (`uco.users`), dev cookie, and immediately refreshes the header first-name chip & greeting.
+4. Shows transient “Saved” indicator and resets to idle state after 1.5s.
+
+Validation: Both first and last names must be non-empty (trimmed). Future enhancements could add length / character set constraints.
+
 Re-login name restoration: When logging in with email/password, if a matching entry exists in the registry, the previously stored `name` is restored even if the login form does not collect names (i.e. future flows could omit name fields).
 
 Testing Notes:

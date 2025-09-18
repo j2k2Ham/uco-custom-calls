@@ -15,6 +15,7 @@ interface UserContextShape {
   loginWithProvider: (provider: 'google' | 'facebook') => Promise<User>;
   createAccount: (data: { firstName: string; lastName: string; email: string; password: string }) => Promise<User>;
   logout: () => void;
+  updateProfile: (data: { firstName: string; lastName: string }) => Promise<User>;
 }
 
 const UserCtx = createContext<UserContextShape | null>(null);
@@ -55,8 +56,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }
 
   function persist(next: User | null) {
-    if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    else localStorage.removeItem(STORAGE_KEY);
+    if (next) {
+      const serialized = JSON.stringify({ id: next.id, email: next.email, name: next.name, provider: next.provider });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      // Plain dev cookie (NOT secure). Expires in 7 days.
+      try {
+        const expires = new Date(Date.now() + 7*24*60*60*1000).toUTCString();
+        document.cookie = `uco_auth=${encodeURIComponent(serialized)}; Path=/; Expires=${expires}`;
+      } catch { /* ignore cookie failures */ }
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+      try { document.cookie = 'uco_auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT'; } catch { /* ignore */ }
+    }
   }
 
   const login = useCallback(async (email: string, password: string): Promise<User> => {
@@ -82,6 +93,26 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser(null); persist(null);
   }, []);
 
+  const updateProfile = useCallback(async ({ firstName, lastName }: { firstName: string; lastName: string }) => {
+    if (!user) throw new Error('Not authenticated');
+    const cleanFirst = firstName.trim();
+    const cleanLast = lastName.trim();
+    if (!cleanFirst || !cleanLast) throw new Error('Name required');
+    const updated: User = { ...user, name: `${cleanFirst} ${cleanLast}` };
+    setUser(updated);
+    persist(updated);
+    // Update registry entry if local provider or existing email mapping
+    try {
+      const usersRaw = localStorage.getItem(USERS_KEY);
+      if (usersRaw && user.email) {
+        const map = JSON.parse(usersRaw) as Record<string, User>;
+        map[user.email.toLowerCase()] = updated;
+        localStorage.setItem(USERS_KEY, JSON.stringify(map));
+      }
+    } catch { /* ignore */ }
+    return updated;
+  }, [user]);
+
   const createAccount = useCallback(async ({ firstName, lastName, email, password }: { firstName: string; lastName: string; email: string; password: string }): Promise<User> => {
     setLoading(true);
     if (!SKIP_DELAY) await fakeDelay(350);
@@ -97,7 +128,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser(next); persist(next); setLoading(false); return next;
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout }), [user, loading, login, loginWithProvider, createAccount, logout]);
+  const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout, updateProfile }), [user, loading, login, loginWithProvider, createAccount, logout, updateProfile]);
 
   return <UserCtx.Provider value={value}>{children}</UserCtx.Provider>;
 }

@@ -3,6 +3,7 @@ import React from 'react';
 import { useUser } from '@/hooks/useUser';
 import { Dialog } from '@headlessui/react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 
 export function ProfileMenu() {
   const { user, logout } = useUser();
@@ -18,7 +19,7 @@ export function ProfileMenu() {
           {user?.name && <span className="text-sm max-w-[8rem] truncate" data-testid="user-first-name">{user.name.split(' ')[0]}</span>}
         </button>
         {menuOpen && (
-          <ul role="menu" className="absolute top-0 left-full ml-2 w-52 bg-camo border border-camo-light rounded shadow-lg py-2 z-50">
+          <ul role="menu" className="absolute top-full left-0 mt-2 w-52 bg-camo border border-camo-light rounded shadow-lg py-2 z-50">
             {!user && (
               <li>
                 <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { setMode('login'); setMenuOpen(false); setLoginOpen(true); }}>Login</button>
@@ -28,7 +29,7 @@ export function ProfileMenu() {
               <>
                 <li className="px-3 pb-2 pt-1 text-xs uppercase tracking-wide text-sky/70" role="presentation">Welcome{user.name ? `, ${user.name.split(' ')[0]}` : ''}</li>
                 <li>
-                  <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { setMenuOpen(false); /* future account page */ }}>My Account</button>
+                  <Link href="/account" role="menuitem" className="block w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => setMenuOpen(false)}>My Account</Link>
                 </li>
                 <li>
                   <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { logout(); setMenuOpen(false); }}>Logout</button>

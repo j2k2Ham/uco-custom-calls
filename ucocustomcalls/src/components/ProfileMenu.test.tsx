@@ -157,4 +157,17 @@ describe('ProfileMenu', () => {
     // Ensure user was not logged in (no first name badge)
     expect(screen.queryByTestId('user-first-name')).toBeNull();
   });
+
+  it('links My Account menu item to /account after login', async () => {
+    renderWithProviders(<ProfileMenu />);
+    fireEvent.click(screen.getByLabelText(/account menu/i));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /login/i }));
+    await screen.findByRole('heading', { name: /login/i });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'linktest@example.com' } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'pw1234' } });
+    fireEvent.click(screen.getByRole('button', { name: /^login$/i }));
+    await waitFor(() => fireEvent.click(screen.getByLabelText(/account menu/i)));
+    const link = await screen.findByRole('menuitem', { name: /my account/i });
+    expect(link).toHaveAttribute('href', '/account');
+  });
 });
