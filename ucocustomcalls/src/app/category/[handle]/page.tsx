@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { PRODUCTS, CATEGORIES } from "@/lib/products";
 import { categoryUrl, productsListingUrl } from '@/lib/urls';
 import { breadcrumbJsonLD } from '@/lib/structuredData';
-import { ProductGrid } from "@/components/ProductGrid";
-import { CategoryButtons } from "@/components/CategoryButtons";
+import { CategoryPageFrame } from "@/components/CategoryPageFrame";
+import { CategoryProductArea } from "@/components/CategoryProductArea";
 
 type CategoryPageParams = { handle: string };
 
@@ -33,9 +33,8 @@ export default async function CategoryPage({ params }: { readonly params: Catego
   const category = CATEGORIES.find(c => c.handle === resolved.handle);
   if (!category) return notFound();
   const products = PRODUCTS.filter(p => p.category === category.handle);
-
-  const inner = (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+  return (
+    <CategoryPageFrame title={category.name}>
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -46,23 +45,7 @@ export default async function CategoryPage({ params }: { readonly params: Catego
           ]))
         }}
       />
-      <div className="mb-6">
-        <CategoryButtons />
-      </div>
-      <div className="mb-6 h-12 flex items-center">
-        <h1 className="text-3xl font-semibold leading-tight">{category.name}</h1>
-      </div>
-      {products.length > 0 ? (
-        <ProductGrid products={products} />
-      ) : category.handle !== 'gear' ? (
-        <p className="text-sm text-sky/70">No items available in this category yet.</p>
-      ) : null}
-    </section>
-  );
-
-  return (
-    <div className="featured-bg category-bg-wrapper border-t border-camo-light/40 flex flex-col min-h-screen -mb-12 pb-12">
-      {inner}
-    </div>
+      <CategoryProductArea products={products} emptyMessage={category.handle === 'gear' ? undefined : 'No items available in this category yet.'} />
+    </CategoryPageFrame>
   );
 }
