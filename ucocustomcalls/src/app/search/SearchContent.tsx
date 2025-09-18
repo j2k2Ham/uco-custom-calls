@@ -1,7 +1,8 @@
 "use client";
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { searchProducts } from '@/lib/productStore';
 import Link from 'next/link';
+import { highlightTokens } from '@/lib/highlight';
 
 interface Props { initialQuery: string }
 
@@ -19,20 +20,6 @@ export default function SearchContent({ initialQuery }: Props) {
 
   useEffect(() => { setQuery(initialQuery); }, [initialQuery]);
 
-  const highlight = useCallback((text: string) => {
-    const q = query.trim();
-    if (!q) return text;
-    const parts = q.split(/\s+/).filter(Boolean).map(p => p.toLowerCase());
-    if (!parts.length) return text;
-    const regex = new RegExp(`(${parts.map(p => p.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')).join('|')})`, 'ig');
-    return text.split(regex).map((seg, i) => {
-      const lower = seg.toLowerCase();
-      if (parts.includes(lower)) {
-        return <mark key={seg + '_' + i} className="bg-brass/60 text-black px-0.5 rounded-sm">{seg}</mark>;
-      }
-      return <React.Fragment key={seg + '_' + i}>{seg}</React.Fragment>;
-    });
-  }, [query]);
 
   const onRecentClick = (r: string) => {
     setQuery(r);
@@ -99,9 +86,9 @@ export default function SearchContent({ initialQuery }: Props) {
                   )}
                 </div>
                 <div className="p-4">
-                  <h2 className="font-semibold text-lg mb-1">{highlight(p.title)}</h2>
+                  <h2 className="font-semibold text-lg mb-1">{highlightTokens(p.title, query)}</h2>
                   <p className="text-xs uppercase tracking-wide text-black/50 mb-2">{p.category}</p>
-                  <p className="text-sm text-black/70 line-clamp-3">{highlight(p.description)}</p>
+                  <p className="text-sm text-black/70 line-clamp-3">{highlightTokens(p.description, query)}</p>
                 </div>
               </Link>
             </li>

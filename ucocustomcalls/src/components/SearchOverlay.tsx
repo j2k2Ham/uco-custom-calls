@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { searchProducts } from '@/lib/productStore';
 import { useRouter } from 'next/navigation';
+import { highlightTokens } from '@/lib/highlight';
 
 interface SearchOverlayProps { open: boolean; onClose: () => void }
 
@@ -13,6 +14,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [recent, setRecent] = useState<string[]>([]);
   const [liveMessage, setLiveMessage] = useState('');
+  const lastAnnounceRef = useRef<string>('');
   const router = useRouter();
 
   useEffect(() => {
@@ -51,7 +53,13 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
       e.preventDefault();
       setActiveIndex(i => {
         const next = Math.min((i === -1 ? 0 : i + 1), suggestions.length - 1);
-        if (suggestions[next]) setLiveMessage(`${suggestions[next].title}, suggestion ${next + 1} of ${suggestions.length}`);
+        if (suggestions[next]) {
+          const msg = `${suggestions[next].title}, suggestion ${next + 1} of ${suggestions.length}`;
+          if (lastAnnounceRef.current !== msg) {
+            lastAnnounceRef.current = msg;
+            setLiveMessage(msg);
+          }
+        }
         return next;
       });
     } else if (e.key === 'ArrowUp') {
@@ -59,8 +67,18 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
       setActiveIndex(i => {
         if (i <= 0) return -1; // back to input focus state
         const next = i - 1;
-        if (suggestions[next]) setLiveMessage(`${suggestions[next].title}, suggestion ${next + 1} of ${suggestions.length}`);
-        else setLiveMessage('Input focus');
+        if (suggestions[next]) {
+          const msg = `${suggestions[next].title}, suggestion ${next + 1} of ${suggestions.length}`;
+          if (lastAnnounceRef.current !== msg) {
+            lastAnnounceRef.current = msg;
+            setLiveMessage(msg);
+          }
+        } else {
+          if (lastAnnounceRef.current !== 'Input focus') {
+            lastAnnounceRef.current = 'Input focus';
+            setLiveMessage('Input focus');
+          }
+        }
         return next;
       });
     } else if (e.key === 'Enter') {
@@ -90,33 +108,22 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     if (!query.trim()) {
       setSuggestions([]);
       setLiveMessage('');
+      lastAnnounceRef.current = '';
       return;
     }
     const handle = setTimeout(() => {
-  setSuggestions(searchProducts(query, 5));
-      setActiveIndex(-1);
       const found = searchProducts(query, 5);
-      setLiveMessage(`${found.length} suggestion${found.length === 1 ? '' : 's'} for ${query}`);
+      setSuggestions(found);
+      setActiveIndex(-1);
+      const msg = `${found.length} suggestion${found.length === 1 ? '' : 's'} for ${query}`;
+      if (lastAnnounceRef.current !== msg) {
+        lastAnnounceRef.current = msg;
+        setLiveMessage(msg);
+      }
     }, 220);
     return () => clearTimeout(handle);
   }, [query, open]);
 
-  const highlight = (text: string) => {
-    const q = query.trim();
-    if (!q) return text;
-    const parts = q.split(/\s+/).filter(Boolean).map(p => p.toLowerCase());
-    if (!parts.length) return text;
-    // Build a regex to split but we'll not rely on lastIndex mutation.
-    const regex = new RegExp(`(${parts.map(p => p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`, 'ig');
-    return text.split(regex).map((seg, i) => {
-      const lower = seg.toLowerCase();
-      const key = seg + '_' + i;
-      if (parts.includes(lower)) {
-        return <mark key={key} className="bg-brass/60 text-black px-0.5 rounded-sm">{seg}</mark>;
-      }
-      return <React.Fragment key={key}>{seg}</React.Fragment>;
-    });
-  };
 
   if (!open) return null;
   return (
@@ -175,7 +182,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium truncate text-lg leading-snug">{highlight(s.title)}</div>
+                      <div className="font-medium truncate text-lg leading-snug">{highlightTokens(s.title, query)}</div>
                       <div className="text-xs uppercase tracking-wide text-white/50 mt-1">{s.category}</div>
                     </div>
                   </button>
