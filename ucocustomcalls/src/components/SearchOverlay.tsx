@@ -12,6 +12,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const [suggestions, setSuggestions] = useState<ReturnType<typeof searchProducts>>([]);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [recent, setRecent] = useState<string[]>([]);
+  const [liveMessage, setLiveMessage] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -48,12 +49,19 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     if (e.key === 'Escape') { onClose(); }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIndex(i => Math.min((i === -1 ? 0 : i + 1), suggestions.length - 1));
+      setActiveIndex(i => {
+        const next = Math.min((i === -1 ? 0 : i + 1), suggestions.length - 1);
+        if (suggestions[next]) setLiveMessage(`${suggestions[next].title}, suggestion ${next + 1} of ${suggestions.length}`);
+        return next;
+      });
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIndex(i => {
         if (i <= 0) return -1; // back to input focus state
-        return i - 1;
+        const next = i - 1;
+        if (suggestions[next]) setLiveMessage(`${suggestions[next].title}, suggestion ${next + 1} of ${suggestions.length}`);
+        else setLiveMessage('Input focus');
+        return next;
       });
     } else if (e.key === 'Enter') {
       if (activeIndex >= 0 && suggestions[activeIndex]) {
@@ -81,10 +89,14 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     if (!open) return;
     if (!query.trim()) {
       setSuggestions([]);
+      setLiveMessage('');
       return;
     }
     const handle = setTimeout(() => {
   setSuggestions(searchProducts(query, 5));
+      setActiveIndex(-1);
+      const found = searchProducts(query, 5);
+      setLiveMessage(`${found.length} suggestion${found.length === 1 ? '' : 's'} for ${query}`);
     }, 220);
     return () => clearTimeout(handle);
   }, [query, open]);
@@ -130,6 +142,14 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             className="bg-transparent text-4xl font-medium tracking-wide outline-none placeholder:text-white/30 border-b-2 border-brass pb-3 transition-[width,padding] duration-300 ease-out w-[40%] min-w-[260px] focus:w-[65%] text-center font-semibold caret-white"
             style={{ maxWidth: '900px', paddingLeft: '0', paddingRight: '0' }}
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setSuggestions([]); setActiveIndex(-1); setLiveMessage(''); setTimeout(() => setLiveMessage('Search cleared'), 10); }}
+              aria-label="Clear search"
+              className="absolute right-[18%] top-1/2 -translate-y-1/2 text-base px-2 py-1 rounded hover:text-brass focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/60"
+            >×</button>
+          )}
           {/* Invisible width balancer for center-grow illusion (optional future enhancement) */}
         </div>
         {suggestions.length > 0 && !submitted && query.trim() !== '' && (
@@ -164,6 +184,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             </ul>
           </div>
         )}
+        <div aria-live="polite" className="sr-only" data-testid="live-region">{liveMessage}</div>
         {query.trim() === '' && recent.length > 0 && (
           <div className="mt-10 w-full max-w-md">
             <div className="text-white/60 text-xs uppercase tracking-wide mb-2">Recent Searches</div>
