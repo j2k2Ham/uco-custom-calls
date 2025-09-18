@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 
-export function AmbientLayers({ delay = 400 }: { delay?: number }) {
+export function AmbientLayers({ delay = 400 }: { readonly delay?: number }) {
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
@@ -25,7 +25,7 @@ export function AmbientLayers({ delay = 400 }: { delay?: number }) {
 
   if (!visible) return null;
   return (
-    <div className="fog-layer pointer-events-none" aria-hidden />
+  <div className="fog-layer pointer-events-none" aria-hidden="true" />
   );
 }
 

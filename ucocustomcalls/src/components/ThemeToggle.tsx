@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 
 // Simple theme toggle manipulating the root <html> class list.
-export function ThemeToggle({ className = '' }: { className?: string }) {
+export function ThemeToggle({ className = '' }: { readonly className?: string }) {
   const [mounted, setMounted] = useState(false);
   const [dark, setDark] = useState(false);
 

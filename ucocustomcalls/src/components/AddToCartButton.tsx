@@ -2,7 +2,7 @@
 import type { Product } from "@/types/product";
 import { useCart } from "@/hooks/useCart";
 
-export function AddToCartButton({ product }: { product: Product }) {
+export function AddToCartButton({ product }: { readonly product: Product }) {
   const { add } = useCart();
   return (
     <button

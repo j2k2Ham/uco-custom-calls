@@ -1,1 +1,1 @@
-export { GET, runtime, alt, contentType } from './image';
+export { GET, runtime } from './image';

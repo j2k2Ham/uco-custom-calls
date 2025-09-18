@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
     const res = NextResponse.json({ user: { id: user.id, email: user.email, name: user.name } });
     await setAuthCookieServer(res, toPayload(user));
     return res;
-  } catch (err: any) {
-    const msg = err?.message || 'Registration failed';
+  } catch (err: unknown) {
+    const msg = (err && typeof err === 'object' && 'message' in err) ? String((err as { message?: unknown }).message) : 'Registration failed';
     const code = msg.includes('exists') ? 409 : 500;
     return NextResponse.json({ error: msg }, { status: code });
   }

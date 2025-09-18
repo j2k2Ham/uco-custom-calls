@@ -9,7 +9,7 @@ describe('currency utilities performance', () => {
   });
 
   bench('formatUSD map batch', () => {
-    SAMPLE.map(v => formatUSD(v));
+    SAMPLE.forEach(v => { formatUSD(v); });
   });
 
   bench('sumCents large array', () => {

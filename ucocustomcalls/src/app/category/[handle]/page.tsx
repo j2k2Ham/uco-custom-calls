@@ -6,11 +6,11 @@ import { breadcrumbJsonLD } from '@/lib/structuredData';
 import { ProductGrid } from "@/components/ProductGrid";
 import { CategoryNav } from "@/components/CategoryNav";
 
-interface CategoryPageParams { handle: string }
-interface CategoryPageProps { params: CategoryPageParams }
+type CategoryPageParams = { handle: string };
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const category = CATEGORIES.find(c => c.handle === params.handle);
+export async function generateMetadata({ params }: any): Promise<Metadata> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const resolved: CategoryPageParams = await params;
+  const category = CATEGORIES.find(c => c.handle === resolved.handle);
   if (!category) return { title: 'Category Not Found' };
   const title = `${category.name} Calls | UCO Custom Calls`;
   const description = `Browse ${category.name.toLowerCase()} calls and accessories from UCO Custom Calls.`;
@@ -23,8 +23,9 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   };
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
-  const category = CATEGORIES.find(c => c.handle === params.handle);
+export default async function CategoryPage({ params }: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const resolved: CategoryPageParams = await params;
+  const category = CATEGORIES.find(c => c.handle === resolved.handle);
   if (!category) return notFound();
   const products = PRODUCTS.filter(p => p.category === category.handle);
 

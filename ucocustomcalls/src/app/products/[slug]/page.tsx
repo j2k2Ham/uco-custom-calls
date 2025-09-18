@@ -9,12 +9,11 @@ import { formatPriceFromCents, getPriceCents } from "@/types/product";
 import { ProductGallery } from "@/components/ProductGallery";
 
 interface ProductPageParams { readonly slug: string }
-interface ProductPageProps { readonly params: ProductPageParams | Promise<ProductPageParams> }
 
 export const dynamicParams = true;
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const resolved = await params;
+export async function generateMetadata({ params }: any): Promise<Metadata> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const resolved: ProductPageParams = await params;
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return { title: 'Product Not Found' };
   const title = product.seo?.metaTitle || product.title;
@@ -39,8 +38,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const resolved = await params;
+export default async function ProductPage({ params }: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const resolved: ProductPageParams = await params;
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return notFound();
 

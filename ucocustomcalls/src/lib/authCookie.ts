@@ -46,33 +46,46 @@ export async function verifyAuthCookie(raw: string | undefined | null): Promise<
 }
 
 // Server-only helpers (no-op on client) for httpOnly cookie management.
-export function setAuthCookieServer(res: { headers?: any; setHeader?: (k: string, v: string | string[]) => any; cookies?: any }, payload: AuthCookiePayload) {
+type HeadersLike = Headers | { [key: string]: unknown } | undefined;
+interface ServerResponseLike {
+  headers?: HeadersLike;
+  setHeader?: (k: string, v: string | string[]) => unknown;
+  getHeader?: (k: string) => unknown;
+  cookies?: unknown;
+}
+
+export function setAuthCookieServer(res: ServerResponseLike, payload: AuthCookiePayload) {
   // We still produce the same signed value; consumer (API route) can call this.
   return (async () => {
     const value = await signAuthCookie(payload);
     const cookie = `uco_auth=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7*24*60*60}`;
     if (res?.setHeader) {
       // Append or set
-      const existing = (res as any).getHeader ? (res as any).getHeader('Set-Cookie') : undefined;
+  const existing = res.getHeader ? res.getHeader('Set-Cookie') : undefined;
       if (existing) {
-        const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
+  const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
         res.setHeader('Set-Cookie', arr);
       } else {
         res.setHeader('Set-Cookie', cookie);
       }
     } else if (res?.headers) {
-      // Edge runtime style: mutate headers object if provided
-      if (Array.isArray(res.headers['Set-Cookie'])) res.headers['Set-Cookie'].push(cookie);
-      else if (res.headers['Set-Cookie']) res.headers['Set-Cookie'] = [res.headers['Set-Cookie'], cookie];
-      else res.headers['Set-Cookie'] = cookie;
+      // If it's a real Headers instance use append
+      if (res.headers instanceof Headers) {
+        res.headers.append('Set-Cookie', cookie);
+      } else {
+        const h = res.headers as { [k: string]: unknown };
+        if (Array.isArray(h['Set-Cookie'])) h['Set-Cookie'].push(cookie);
+        else if (h['Set-Cookie']) h['Set-Cookie'] = [h['Set-Cookie'], cookie];
+        else h['Set-Cookie'] = cookie;
+      }
     }
   })();
 }
 
-export function clearAuthCookieServer(res: { headers?: any; setHeader?: (k: string, v: string | string[]) => any }) {
+export function clearAuthCookieServer(res: ServerResponseLike) {
   const cookie = 'uco_auth=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
   if (res?.setHeader) {
-    const existing = (res as any).getHeader ? (res as any).getHeader('Set-Cookie') : undefined;
+  const existing = res.getHeader ? res.getHeader('Set-Cookie') : undefined;
     if (existing) {
       const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
       res.setHeader('Set-Cookie', arr);
@@ -80,8 +93,13 @@ export function clearAuthCookieServer(res: { headers?: any; setHeader?: (k: stri
       res.setHeader('Set-Cookie', cookie);
     }
   } else if (res?.headers) {
-    if (Array.isArray(res.headers['Set-Cookie'])) res.headers['Set-Cookie'].push(cookie);
-    else if (res.headers['Set-Cookie']) res.headers['Set-Cookie'] = [res.headers['Set-Cookie'], cookie];
-    else res.headers['Set-Cookie'] = cookie;
+    if (res.headers instanceof Headers) {
+      res.headers.append('Set-Cookie', cookie);
+    } else {
+      const h = res.headers as { [k: string]: unknown };
+      if (Array.isArray(h['Set-Cookie'])) h['Set-Cookie'].push(cookie);
+      else if (h['Set-Cookie']) h['Set-Cookie'] = [h['Set-Cookie'], cookie];
+      else h['Set-Cookie'] = cookie;
+    }
   }
 }

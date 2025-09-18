@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthCookie, setAuthCookieServer } from '@/lib/authCookie';
-import { updateUserName, toPayload, findUserByEmail } from '@/lib/serverUsers';
+import { updateUserName, toPayload } from '@/lib/serverUsers';
 
 export async function GET(req: NextRequest) {
   const cookie = req.cookies.get('uco_auth')?.value;

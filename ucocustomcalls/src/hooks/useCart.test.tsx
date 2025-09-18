@@ -1,8 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { useCart } from './useCart';
+import { useCart, CartProvider } from './useCart';
 import { UserProvider } from '@/hooks/useUser';
-import { CartProvider } from './useCart';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <UserProvider><CartProvider>{children}</CartProvider></UserProvider>

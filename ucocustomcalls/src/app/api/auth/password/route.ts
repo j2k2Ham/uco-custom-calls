@@ -15,8 +15,9 @@ export async function POST(req: NextRequest) {
     if (current === next) return NextResponse.json({ error: 'New password must differ' }, { status: 400 });
     changeUserPassword(payload.id, current, next);
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    const msg = err?.message?.includes('Current password invalid') ? 'Current password invalid' : 'Change failed';
+  } catch (err: unknown) {
+    const message = (err && typeof err === 'object' && 'message' in err) ? String((err as { message?: unknown }).message) : '';
+    const msg = message.includes('Current password invalid') ? 'Current password invalid' : 'Change failed';
     const status = msg === 'Current password invalid' ? 400 : 500;
     return NextResponse.json({ error: msg }, { status });
   }

@@ -23,7 +23,7 @@ const ToastCtx = createContext<ToastContextShape | null>(null);
 
 type HoverMode = 'extend' | 'pause' | 'none';
 
-interface ToastProviderProps { children: React.ReactNode; maxVisible?: number; hoverMode?: HoverMode; }
+interface ToastProviderProps { readonly children: React.ReactNode; readonly maxVisible?: number; readonly hoverMode?: HoverMode; }
 
 export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }: ToastProviderProps) {
   interface ActiveToast extends Toast { createdAt: number; total: number; remaining: number; paused: boolean; count: number; }
@@ -157,7 +157,9 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }
           const isExiting = exiting[t.id];
           const delay = Math.min(idx * 60, 300);
           const percent = t.total ? (t.remaining / t.total) * 100 : 0;
-          const variantClass = t.type === 'error' ? 'toast-error' : t.type === 'success' ? 'toast-success' : '';
+          let variantClass = '';
+          if (t.type === 'error') variantClass = 'toast-error';
+          else if (t.type === 'success') variantClass = 'toast-success';
           return (
             <output
               key={t.id}

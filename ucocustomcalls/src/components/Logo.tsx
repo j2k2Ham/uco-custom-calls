@@ -4,15 +4,15 @@ import Link from 'next/link';
 import React, { ElementType } from 'react';
 
 interface LogoProps {
-  variant?: 'auto' | 'light' | 'dark';
-  as?: 'link' | 'div';
-  inlineSvg?: boolean; // when true, render inline SVG instead of raster
-  usePicture?: boolean; // render a <picture> with manual <source> elements
-  className?: string;
-  priority?: boolean;
-  height?: number; // desired display height in px (defaults to 32)
-  sizes?: string; // override responsive sizes attribute
-  ariaLabel?: string;
+  readonly variant?: 'auto' | 'light' | 'dark';
+  readonly as?: 'link' | 'div';
+  readonly inlineSvg?: boolean; // when true, render inline SVG instead of raster
+  readonly usePicture?: boolean; // render a <picture> with manual <source> elements
+  readonly className?: string;
+  readonly priority?: boolean;
+  readonly height?: number; // desired display height in px (defaults to 32)
+  readonly sizes?: string; // override responsive sizes attribute
+  readonly ariaLabel?: string;
 }
 
 // Intrinsic raster asset dimensions (2x version)
@@ -56,11 +56,15 @@ export function Logo({ variant = 'auto', as = 'link', inlineSvg = false, usePict
 
   const lightSrc = '/images/company-logo-green-2x.png';
   const darkSrc = '/images/company-logo-green-2x-dark.png'; // expected dark variant file
-  const useDark = variant === 'dark';
-  const useLight = variant === 'light';
-
-  const showDark = variant === 'auto' ? 'dark:inline' : useDark ? 'inline' : 'hidden';
-  const showLight = variant === 'auto' ? 'inline dark:hidden' : useLight ? 'inline' : 'hidden';
+  let showDark = 'hidden';
+  let showLight = 'inline';
+  if (variant === 'dark') {
+    showDark = 'inline';
+    showLight = 'hidden';
+  } else if (variant === 'auto') {
+    showDark = 'dark:inline';
+    showLight = 'inline dark:hidden';
+  }
 
   const sharedClasses = `h-[${height}px] w-auto object-contain ${className}`.trim();
 
