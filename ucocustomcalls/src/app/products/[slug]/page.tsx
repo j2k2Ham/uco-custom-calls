@@ -7,6 +7,7 @@ import { AddToCartButton } from "@/components/AddToCartButton";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { formatPriceFromCents, getPriceCents } from "@/types/product";
 import { ProductGallery } from "@/components/ProductGallery";
+import { CategoryButtons } from "@/components/CategoryButtons";
 
 interface ProductPageParams { readonly slug: string }
 
@@ -78,7 +79,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           ]))
         }}
       />
-      <div><ProductGallery product={product} /></div>
+      <div>
+        <ProductGallery product={product} />
+        <div className="mt-8 hidden lg:block">
+          <CategoryButtons />
+        </div>
+      </div>
 
       <div className="mt-8 lg:mt-0">
         <h1 className="text-3xl font-semibold">{product.title}</h1>

@@ -4,7 +4,7 @@ import { PRODUCTS, CATEGORIES } from "@/lib/products";
 import { categoryUrl, productsListingUrl } from '@/lib/urls';
 import { breadcrumbJsonLD } from '@/lib/structuredData';
 import { ProductGrid } from "@/components/ProductGrid";
-import { CategoryNav } from "@/components/CategoryNav";
+import { CategoryButtons } from "@/components/CategoryButtons";
 
 type CategoryPageParams = { handle: string };
 
@@ -41,7 +41,7 @@ export default async function CategoryPage({ params }: { readonly params: Catego
           ]))
         }}
       />
-      <CategoryNav />
+  <CategoryButtons className="mb-6" />
       <h1 className="text-3xl font-semibold mb-6">{category.name}</h1>
       <ProductGrid products={products} />
     </section>
