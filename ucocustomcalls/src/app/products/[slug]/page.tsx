@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       />
       <div>
         <ProductGallery product={product} />
-        <div className="mt-8 hidden lg:block">
+        <div className="mt-8">
           <CategoryButtons />
         </div>
       </div>

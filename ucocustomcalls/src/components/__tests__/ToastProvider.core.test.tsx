@@ -4,7 +4,7 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import { ToastProvider, useToast } from '../ToastProvider';
 
 function Harness({ children }: { children?: React.ReactNode }) {
-  return <ToastProvider hoverMode="none" maxVisible={4}>{children}</ToastProvider>;
+  return <ToastProvider hoverMode="none" maxVisible={4} disableAutoDismissInTest={false}>{children}</ToastProvider>;
 }
 
 type ToastContextType = {
@@ -52,7 +52,7 @@ describe('ToastProvider core behaviors', () => {
   });
 
   it('queues when above maxVisible and promotes after space frees', () => {
-    render(<ToastProvider hoverMode="none" maxVisible={2}><PushButtons /></ToastProvider>);
+  render(<ToastProvider hoverMode="none" maxVisible={2} disableAutoDismissInTest={false}><PushButtons /></ToastProvider>);
     fireEvent.click(screen.getByText('push-a'));
     fireEvent.click(screen.getByText('push-b'));
     // Add queued item
@@ -60,7 +60,8 @@ describe('ToastProvider core behaviors', () => {
     // Only two visible
     expect(screen.getByText('A')).toBeInTheDocument();
     expect(screen.getByText('B')).toBeInTheDocument();
-    expect(screen.queryByText('Queued')).toBeNull();
+  // Queue info should reflect one queued item
+  expect(screen.getByText('Queued')).toBeInTheDocument();
     // Let first toast auto-dismiss
     act(() => { vi.advanceTimersByTime(900); });
     act(() => { vi.advanceTimersByTime(350); });
@@ -85,7 +86,7 @@ describe('ToastProvider core behaviors', () => {
   });
 
   it('dismissAll exits all visible and clears queued', () => {
-    render(<ToastProvider hoverMode="none" maxVisible={2}><PushButtons /></ToastProvider>);
+  render(<ToastProvider hoverMode="none" maxVisible={2} disableAutoDismissInTest={false}><PushButtons /></ToastProvider>);
     fireEvent.click(screen.getByText('push-a'));
     fireEvent.click(screen.getByText('push-b'));
     fireEvent.click(screen.getByText('queued'));

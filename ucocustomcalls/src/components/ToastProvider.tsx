@@ -202,9 +202,9 @@ export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend', 
           );
         })}
         {(queue.length > 0) && (
-          <div className="flex gap-2 pt-1 items-center">
+          <div className="flex gap-2 pt-1 items-center" data-testid="toast-queue-info">
             <button onClick={dismissAll} className="text-xs underline text-sky/80 hover:text-sky">Dismiss All</button>
-            <span className="text-xs text-sky/60">Queued: {queue.length}</span>
+            <span className="text-xs text-sky/60"><span className="sr-only">Queued toasts:</span><span>Queued</span>: {queue.length}</span>
           </div>
         )}
       </div>

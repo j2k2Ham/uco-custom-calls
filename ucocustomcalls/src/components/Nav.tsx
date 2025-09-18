@@ -13,7 +13,8 @@ export function Nav() {
   const shopItems = [
     { href: "/category/duck", label: "Duck Calls" },
     { href: "/category/goose", label: "Goose Calls" },
-    { href: "/category/lanyards", label: "Paracord Lanyards" }
+    { href: "/category/lanyards", label: "Paracord Lanyards" },
+    { href: "/category/accessories", label: "Accessories" }
   ];
   const huntingItems = [
     { href: "/sound-files", label: "Sound Files" }
@@ -93,8 +94,8 @@ export function Nav() {
 
   return (
   <nav aria-label="Primary">
-  <ul className="hidden md:flex gap-6 items-center" aria-label="Main menu">
-        <li role="none">
+  <ul className="hidden md:flex gap-6 items-center" aria-label="Main menu" role="menubar">
+        <li>
           <Link
             role="menuitem"
             href="/"
@@ -102,13 +103,14 @@ export function Nav() {
             aria-current={pathname === '/' ? 'page' : undefined}
           >Home</Link>
         </li>
-        <li className="relative" data-nav-shop role="none">
+        <li className="relative" data-nav-shop>
           <button
             ref={shopBtnRef}
             className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openShop ? 'text-brass' : ''}`}
             aria-haspopup="true"
             aria-expanded={openShop}
             role="menuitem"
+            id="nav-shop-trigger"
             onClick={() => setOpenShop(o => { const next = !o; if (next) { setOpenHunting(false); } setStored(NavStorageKey.ShopOpen, next ? '1' : '0'); return next; })}
             onKeyDown={e => {
                 const SPACE_KEY = ' ';
@@ -137,7 +139,8 @@ export function Nav() {
           {openShop && (
             <ul
               ref={shopMenuRef}
-              aria-label="Shop submenu"
+              role="menu"
+              aria-labelledby="nav-shop-trigger"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
             >
               {shopItems.map((item) => {
@@ -193,13 +196,14 @@ export function Nav() {
             </ul>
           )}
         </li>
-        <li className="relative" data-nav-hunting role="none">
+        <li className="relative" data-nav-hunting>
           <button
             ref={huntingBtnRef}
             className={`hover:text-brass inline-flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${openHunting ? 'text-brass' : ''}`}
             aria-haspopup="true"
             aria-expanded={openHunting}
             role="menuitem"
+            id="nav-hunting-trigger"
             onClick={() => setOpenHunting(o => { const next = !o; if (next) { setOpenShop(false); } setStored(NavStorageKey.HuntingOpen, next ? '1' : '0'); return next; })}
             onKeyDown={e => {
               if (["ArrowDown","Enter"," "].includes(e.key)) {
@@ -223,13 +227,14 @@ export function Nav() {
           {openHunting && (
             <ul
               ref={huntingMenuRef}
-              aria-label="Hunting submenu"
+              role="menu"
+              aria-labelledby="nav-hunting-trigger"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
             >
               {huntingItems.map((item) => {
                 const active = pathname.startsWith(item.href);
                 return (
-                  <li key={item.href} role="none">
+                  <li key={item.href}>
                     <Link
                       role="menuitem"
                       aria-current={active ? 'page' : undefined}
@@ -282,7 +287,7 @@ export function Nav() {
         {otherLinks.map(l => {
           const active = pathname.startsWith(l.href);
           return (
-            <li key={l.href} role="none">
+            <li key={l.href}>
               <Link
                 role="menuitem"
                 className={`hover:text-brass focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 rounded-sm ${active ? 'text-brass' : ''}`}
