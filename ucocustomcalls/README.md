@@ -313,6 +313,63 @@ The app includes a client-only auth context used for UI flows (no real backend):
 
 To migrate to real auth later, inject async implementations into the provider or replace internal stub logic—UI contracts (login/logout shape) can remain stable.
 
+### Server Auth Mode (Optional Dev Hardened Path)
+
+A lightweight server-backed auth layer can be enabled to simulate more realistic flows while still remaining dev-only. Set:
+
+```bash
+NEXT_PUBLIC_USE_SERVER_AUTH=1
+AUTH_COOKIE_SECRET="replace-me"
+```
+
+Key Changes When Enabled:
+
+1. `useUser` issues `fetch` calls to `/api/auth/*` endpoints instead of mutating client registry.
+2. Users stored in `data/users.json` with `bcrypt` password hashes (cost 10). File-based persistence only.
+3. HTTP-only signed cookie (`uco_auth`) set via API responses (signature = truncated SHA-256 of base64 payload + secret).
+4. Middleware still guards `/account` using the same verification logic; now benefits from httpOnly status (client JS cannot read cookie contents).
+5. Profile updates & password changes flow through `PATCH /api/auth/profile` and `POST /api/auth/password` respectively.
+
+Security Caveats:
+
+- No rate limiting / lockout for brute force.
+- Secret loaded from environment; rotate & keep out of version control.
+- No CSRF tokens (Lax cookie + same-origin fetch reduces but does not eliminate risk for state-changing POSTs).
+- File writes are synchronous; acceptable for dev only.
+
+Extending Toward Production:
+
+- Replace JSON file with a database (SQLite/Postgres). Abstract read/write behind an async repo.
+- Add rate limiting + lockout window.
+- Introduce CSRF protection (double submit token or SameSite=Strict + custom header validation).
+- Add refresh tokens + short-lived access tokens if moving to external API consumption.
+
+### Toast System
+
+`ToastProvider` (`src/components/ToastProvider.tsx`) supplies a `useToast()` hook with `push(message, { type, timeout })`.
+
+Usage Automatically Added To:
+
+- Login / Logout / Register (success & error)
+- SSO provider logins
+- Profile name update
+- Password change
+
+Accessibility:
+
+- Container uses `aria-live="polite"` and each toast has `role="status"` for screen reader announcement.
+- Dismiss button (`✕`) per toast; auto-dismiss after default 4s.
+
+Styling:
+
+- Base class: semi-transparent dark background + subtle border.
+- Variants: `success` (green text), `error` (red), default (white).
+
+Extending:
+
+- Add queue limit or collapse duplicates by hashing message.
+- Support action buttons (e.g., Undo) by extending Toast shape.
+
 ### Turbopack Fallback & CSS Crash Troubleshooting
 
 On some Windows environments an internal Turbopack crash (`TurbopackInternalError` while processing `globals.css`) can surface as:

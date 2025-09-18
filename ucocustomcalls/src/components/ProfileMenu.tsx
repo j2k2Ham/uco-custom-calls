@@ -1,12 +1,14 @@
 "use client";
 import React from 'react';
 import { useUser } from '@/hooks/useUser';
+import { useToast } from '@/components/ToastProvider';
 import { Dialog } from '@headlessui/react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 export function ProfileMenu() {
   const { user, logout } = useUser();
+  const { push } = useToast();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [loginOpen, setLoginOpen] = React.useState(false);
   const [mode, setMode] = React.useState<'login' | 'create'>('login');
@@ -32,7 +34,7 @@ export function ProfileMenu() {
                   <Link href="/account" role="menuitem" className="block w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => setMenuOpen(false)}>My Account</Link>
                 </li>
                 <li>
-                  <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { logout(); setMenuOpen(false); }}>Logout</button>
+                  <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { logout(); push('Logged out', { type: 'info' }); setMenuOpen(false); }}>Logout</button>
                 </li>
               </>
             )}
@@ -46,6 +48,7 @@ export function ProfileMenu() {
 
 function LoginDrawer({ open, onClose, mode, setMode }: { open: boolean; onClose: () => void; mode: 'login' | 'create'; setMode: (m: 'login' | 'create') => void }) {
   const { login, loginWithProvider, createAccount, loading } = useUser();
+  const { push } = useToast();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [firstName, setFirstName] = React.useState('');
@@ -58,19 +61,22 @@ function LoginDrawer({ open, onClose, mode, setMode }: { open: boolean; onClose:
     try {
       if (mode === 'login') {
         await login(email, password);
+        push('Logged in', { type: 'success' });
       } else {
         await createAccount({ firstName, lastName, email, password });
+        push('Account created', { type: 'success' });
       }
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed';
       setError(msg);
+      push(msg, { type: 'error' });
     }
   }
 
   async function handleProvider(provider: 'google' | 'facebook') {
     setError(null);
-    try { await loginWithProvider(provider); onClose(); } catch (e: unknown) { setError(e instanceof Error ? e.message : 'SSO failed'); }
+    try { await loginWithProvider(provider); push('Logged in with ' + provider, { type: 'success' }); onClose(); } catch (e: unknown) { const msg = e instanceof Error ? e.message : 'SSO failed'; setError(msg); push(msg, { type: 'error' }); }
   }
 
   return (

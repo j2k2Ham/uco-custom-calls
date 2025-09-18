@@ -2,7 +2,8 @@
 // Format: uco_auth=<b64Payload>.<hash>
 // hash = simple SHA-256 of (b64Payload + secret) truncated for brevity.
 
-const SECRET = 'dev-secret'; // replace with env var for real usage
+// Secret resolution: prefer process.env.AUTH_COOKIE_SECRET (node / server), fallback to NEXT_PUBLIC, then dev default.
+const SECRET = (typeof process !== 'undefined' && process.env.AUTH_COOKIE_SECRET) || (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_AUTH_COOKIE_SECRET) || 'dev-secret';
 
 export interface AuthCookiePayload {
   id: string; email: string; name?: string; provider?: string;
@@ -41,5 +42,46 @@ export async function verifyAuthCookie(raw: string | undefined | null): Promise<
     return parsed;
   } catch {
     return null;
+  }
+}
+
+// Server-only helpers (no-op on client) for httpOnly cookie management.
+export function setAuthCookieServer(res: { headers?: any; setHeader?: (k: string, v: string | string[]) => any; cookies?: any }, payload: AuthCookiePayload) {
+  // We still produce the same signed value; consumer (API route) can call this.
+  return (async () => {
+    const value = await signAuthCookie(payload);
+    const cookie = `uco_auth=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7*24*60*60}`;
+    if (res?.setHeader) {
+      // Append or set
+      const existing = (res as any).getHeader ? (res as any).getHeader('Set-Cookie') : undefined;
+      if (existing) {
+        const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
+        res.setHeader('Set-Cookie', arr);
+      } else {
+        res.setHeader('Set-Cookie', cookie);
+      }
+    } else if (res?.headers) {
+      // Edge runtime style: mutate headers object if provided
+      if (Array.isArray(res.headers['Set-Cookie'])) res.headers['Set-Cookie'].push(cookie);
+      else if (res.headers['Set-Cookie']) res.headers['Set-Cookie'] = [res.headers['Set-Cookie'], cookie];
+      else res.headers['Set-Cookie'] = cookie;
+    }
+  })();
+}
+
+export function clearAuthCookieServer(res: { headers?: any; setHeader?: (k: string, v: string | string[]) => any }) {
+  const cookie = 'uco_auth=; Path=/; HttpOnly; SameSite=Lax; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  if (res?.setHeader) {
+    const existing = (res as any).getHeader ? (res as any).getHeader('Set-Cookie') : undefined;
+    if (existing) {
+      const arr = Array.isArray(existing) ? existing.concat(cookie) : [existing as string, cookie];
+      res.setHeader('Set-Cookie', arr);
+    } else {
+      res.setHeader('Set-Cookie', cookie);
+    }
+  } else if (res?.headers) {
+    if (Array.isArray(res.headers['Set-Cookie'])) res.headers['Set-Cookie'].push(cookie);
+    else if (res.headers['Set-Cookie']) res.headers['Set-Cookie'] = [res.headers['Set-Cookie'], cookie];
+    else res.headers['Set-Cookie'] = cookie;
   }
 }

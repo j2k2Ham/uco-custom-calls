@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUser } from '@/hooks/useUser';
+import { useToast } from '@/components/ToastProvider';
 import Link from 'next/link';
 
 export default function AccountPage() {
@@ -14,6 +15,7 @@ export default function AccountPage() {
 
 function AccountContent() {
   const { user, updateProfile, changePassword } = useUser();
+  const { push } = useToast();
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -49,7 +51,7 @@ function AccountContent() {
         {user.name && <div className="text-sm"><span className="font-semibold">Name:</span> {user.name}</div>}
         <div className="text-sm"><span className="font-semibold">Provider:</span> {user.provider ?? 'local'}</div>
       </div>
-      <form onSubmit={async e => { e.preventDefault(); setStatus('saving'); setError(null); try { await updateProfile({ firstName, lastName }); setStatus('saved'); setTimeout(()=>setStatus('idle'), 1500); } catch (err: any) { setError(err.message || 'Update failed'); setStatus('error'); } }} className="bg-camo-light/10 rounded p-4 border border-camo-light space-y-4">
+  <form onSubmit={async e => { e.preventDefault(); setStatus('saving'); setError(null); try { await updateProfile({ firstName, lastName }); setStatus('saved'); push('Profile updated', { type: 'success' }); setTimeout(()=>setStatus('idle'), 1500); } catch (err: any) { const msg = err.message || 'Update failed'; setError(msg); push(msg, { type: 'error' }); setStatus('error'); } }} className="bg-camo-light/10 rounded p-4 border border-camo-light space-y-4">
         <h3 className="font-medium">Edit Name</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -65,7 +67,7 @@ function AccountContent() {
         <button type="submit" disabled={status==='saving'} className="bg-brass text-black rounded px-4 py-2 disabled:opacity-60">{status==='saving' ? 'Saving...' : 'Save Changes'}</button>
         {status === 'saved' && <span className="ml-3 text-sm text-green-400" role="status">Saved</span>}
       </form>
-      <form onSubmit={async e => { e.preventDefault(); setPwStatus('saving'); setPwError(null); try { await changePassword({ current: pwCurrent, next: pwNext, confirm: pwConfirm }); setPwStatus('saved'); setTimeout(()=>setPwStatus('idle'), 1500); setPwCurrent(''); setPwNext(''); setPwConfirm(''); } catch (err: any) { setPwError(err.message || 'Change failed'); setPwStatus('error'); } }} className="bg-camo-light/10 rounded p-4 border border-camo-light space-y-4">
+  <form onSubmit={async e => { e.preventDefault(); setPwStatus('saving'); setPwError(null); try { await changePassword({ current: pwCurrent, next: pwNext, confirm: pwConfirm }); setPwStatus('saved'); push('Password updated', { type: 'success' }); setTimeout(()=>setPwStatus('idle'), 1500); setPwCurrent(''); setPwNext(''); setPwConfirm(''); } catch (err: any) { const msg = err.message || 'Change failed'; setPwError(msg); push(msg, { type: 'error' }); setPwStatus('error'); } }} className="bg-camo-light/10 rounded p-4 border border-camo-light space-y-4">
         <h3 className="font-medium">Change Password (Stub)</h3>
         <div className="grid gap-4">
           <div>

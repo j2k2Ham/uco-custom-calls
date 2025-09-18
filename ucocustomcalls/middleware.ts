@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { verifyAuthCookie } from './src/lib/authCookie';
 
-// Dev-only protection for /account.
+// Auth protection for /account (dev + server mode).
 // 1. If no cookie -> redirect home.
-// 2. If cookie present but signature invalid or payload malformed -> clear cookie + redirect.
-// 3. If valid -> allow request.
+// 2. If present but invalid signature/malformed -> clear + redirect.
+// 3. Valid cookie -> allow request (httpOnly when using server auth mode).
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === '/account') {
     const cookie = req.cookies.get('uco_auth');

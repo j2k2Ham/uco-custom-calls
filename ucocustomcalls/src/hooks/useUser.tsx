@@ -24,6 +24,7 @@ const UserCtx = createContext<UserContextShape | null>(null);
 const STORAGE_KEY = 'uco.user';
 const USERS_KEY = 'uco.users'; // registry of created local users
 const SKIP_DELAY = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.NEXT_PUBLIC_AUTH_DELAY === '0');
+const SERVER_MODE = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_USE_SERVER_AUTH === '1';
 
 function fakeDelay(ms: number) {
   if (SKIP_DELAY) return Promise.resolve();
@@ -35,14 +36,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as User;
-        if (parsed && typeof parsed.id === 'string') setUser(parsed);
+    (async () => {
+      if (SERVER_MODE) {
+        try {
+          const res = await fetch('/api/auth/profile', { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) setUser(data.user);
+          }
+        } catch { /* ignore */ }
+        setLoading(false);
+        return;
       }
-    } catch { /* ignore */ }
-    setLoading(false);
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as User;
+          if (parsed && typeof parsed.id === 'string') setUser(parsed);
+        }
+      } catch { /* ignore */ }
+      setLoading(false);
+    })();
   }, []);
 
   function loadUsers(): Record<string, User> {
@@ -58,6 +72,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }
 
   function persist(next: User | null) {
+    if (SERVER_MODE) return; // server sets httpOnly cookie; we only reflect local state
     if (next) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       (async () => {
@@ -79,9 +94,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!SKIP_DELAY) await fakeDelay(300);
     if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { setLoading(false); throw new Error('Invalid email'); }
     if (password.length < 4) { setLoading(false); throw new Error('Password too short'); }
+    if (SERVER_MODE) {
+      try {
+        const res = await fetch('/api/auth/login', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        setUser(data.user); setLoading(false); return data.user;
+      } catch (e: any) { setLoading(false); throw e; }
+    }
     const users = loadUsers();
-  const existing = users[email.toLowerCase()] as User | undefined;
-  const next: User = existing ?? { id: `u_${btoa(email)}`, email, provider: 'local' };
+    const existing = users[email.toLowerCase()] as User | undefined;
+    const next: User = existing ?? { id: `u_${btoa(email)}`, email, provider: 'local' };
     setUser(next); persist(next); setLoading(false); return next;
   }, []);
 
@@ -94,6 +117,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    if (SERVER_MODE) {
+      fetch('/api/auth/logout', { method: 'POST' });
+    }
     setUser(null); persist(null);
   }, []);
 
@@ -102,10 +128,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const cleanFirst = firstName.trim();
     const cleanLast = lastName.trim();
     if (!cleanFirst || !cleanLast) throw new Error('Name required');
+    if (SERVER_MODE) {
+      const res = await fetch('/api/auth/profile', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: cleanFirst, lastName: cleanLast }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+      setUser(data.user); return data.user;
+    }
     const updated: User = { ...user, name: `${cleanFirst} ${cleanLast}` };
     setUser(updated);
     persist(updated);
-    // Update registry entry if local provider or existing email mapping
     try {
       const usersRaw = localStorage.getItem(USERS_KEY);
       if (usersRaw && user.email) {
@@ -123,6 +154,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!firstName.trim() || !lastName.trim()) { setLoading(false); throw new Error('Name required'); }
     if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { setLoading(false); throw new Error('Invalid email'); }
     if (password.length < 6) { setLoading(false); throw new Error('Password too short'); }
+    if (SERVER_MODE) {
+      try {
+        const res = await fetch('/api/auth/register', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName, lastName, email, password }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        setUser(data.user); setLoading(false); return data.user;
+      } catch (e: any) { setLoading(false); throw e; }
+    }
     const users = loadUsers();
     if (users[email.toLowerCase()]) { setLoading(false); throw new Error('Account already exists'); }
     const name = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -134,14 +173,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const changePassword = useCallback(async ({ current, next, confirm }: { current: string; next: string; confirm: string }) => {
     if (!user) throw new Error('Not authenticated');
-    // Dev stub: we do not actually store password, so just validate shape
+    if (SERVER_MODE) {
+      const res = await fetch('/api/auth/password', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current, next, confirm }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Change failed');
+      return;
+    }
     if (current.trim().length < 4) throw new Error('Current password invalid');
     if (next.trim().length < 6) throw new Error('New password too short');
     if (next !== confirm) throw new Error('Passwords do not match');
     if (current === next) throw new Error('New password must differ');
-    // Pretend delay for UX realism (skipped in tests)
     if (!SKIP_DELAY) await fakeDelay(300);
-    return; // success: nothing to persist in mock
+    return;
   }, [user]);
 
   const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout, updateProfile, changePassword }), [user, loading, login, loginWithProvider, createAccount, logout, updateProfile, changePassword]);
