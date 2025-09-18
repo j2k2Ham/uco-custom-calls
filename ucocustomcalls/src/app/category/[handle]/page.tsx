@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: { readonly params: Catego
   if (!category) return notFound();
   const products = PRODUCTS.filter(p => p.category === category.handle);
 
-  return (
+  const inner = (
     <section className="mx-auto max-w-6xl px-4 py-10">
       <script
         type="application/ld+json"
@@ -46,13 +46,19 @@ export default async function CategoryPage({ params }: { readonly params: Catego
           ]))
         }}
       />
-  <CategoryButtons className="mb-6" />
+      <CategoryButtons className="mb-6" />
       <h1 className="text-3xl font-semibold mb-6">{category.name}</h1>
       {products.length > 0 ? (
         <ProductGrid products={products} />
-  ) : category.handle !== 'gear' ? (
+      ) : category.handle !== 'gear' ? (
         <p className="text-sm text-sky/70">No items available in this category yet.</p>
       ) : null}
     </section>
+  );
+
+  return (
+    <div className="featured-bg category-bg-wrapper border-t border-camo-light/40 flex flex-col min-h-screen -mb-12 pb-12">
+      {inner}
+    </div>
   );
 }
