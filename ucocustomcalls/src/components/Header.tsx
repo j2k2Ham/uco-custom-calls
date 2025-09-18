@@ -50,7 +50,7 @@ export function Header() {
           <ThemeToggle className="mr-2" />
           <button
             type="button"
-            aria-label="Search store"
+            aria-label="Search the store"
             onClick={() => setSearchOpen(true)}
             className="p-2 rounded-md hover:bg-camo-light"
           >

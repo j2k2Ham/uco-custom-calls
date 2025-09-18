@@ -20,9 +20,9 @@ function Wrapper() {
 describe('SearchOverlay', () => {
   it('opens overlay and performs search on Enter', () => {
     render(<Wrapper />);
-    const searchBtn = screen.getByRole('button', { name: /search store/i });
+  const searchBtn = screen.getByRole('button', { name: /search the store/i });
     fireEvent.click(searchBtn);
-    const input = screen.getByPlaceholderText(/search store/i);
+  const input = screen.getByPlaceholderText(/search the store/i);
     fireEvent.change(input, { target: { value: 'pintail' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
     // Result title should appear
