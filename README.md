@@ -268,3 +268,101 @@ Run: `npm run test:e2e`
 ### Log File
 
 All inquiries append to `data/inquiries.log` (one JSON object per line) with timestamp and IP (`x-forwarded-for`). Secure or rotate this file in production.
+
+## Toast & Notification System
+
+An accessible, configurable toast system powers inline feedback (login/logout, profile updates, password change stub, errors). It is implemented in `src/components/ToastProvider.tsx` and exposed via the `useToast()` hook.
+
+### Provider Usage
+
+Wrap the app (already done in the test + root providers) with:
+
+```tsx
+<ToastProvider hoverMode="extend" maxVisible={4}>
+  {children}
+</ToastProvider>
+```
+
+Props:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `maxVisible` | number | `4` | Max concurrently rendered toasts; excess queued. |
+| `hoverMode` | `'extend' \| 'pause' \| 'none'` | `extend` | Behavior when hovering a toast. |
+| `disableAutoDismissInTest` | boolean | `true` (skips interval) | In test env, when `false` re-enables timers so hover/timeout specs run. |
+
+### Hover Modes
+
+- `extend`: Each hover grants +15% of original timeout up to 2× the original duration (refreshing remaining time proportional to added total).
+- `pause`: Freezes remaining time on `mouseenter`, resumes countdown on `mouseleave`.
+- `none`: Ignores hover interaction—timers continue unabated.
+
+### API
+
+`const { push, dismissAll } = useToast();`
+
+`push(message: string, opts?: { type?: 'info' | 'success' | 'error'; timeout?: number; action?: { label: string; onClick: () => void } })`
+
+Duplicate suppression: Calls to `push` with same `message` + `type` update the existing toast’s timestamp, reset remaining time (respecting current hover mode), increment a visible multiplier badge (`×n`), and optionally replace its action.
+
+`dismissAll()` triggers graceful exit animations for visible toasts and clears the queue.
+
+### Keyboard Navigation
+
+The toast region (`role="group" aria-label="Notifications"`) is focusable. When focused:
+
+- ArrowDown / ArrowUp: Move focus among active toasts.
+- Home / End: Jump to first / last toast.
+- Delete: Dismiss the currently focused toast.
+- Shift+Delete (UI hint optional): You can bind this globally to `dismissAll` (not wired by default—left to integrators).
+
+### Accessibility
+
+- Container: `role=group` + `aria-live="polite"` for non‑intrusive announcements.
+- Each toast: `role=status` so screen readers announce message changes without stealing focus.
+- Action buttons & dismiss buttons are standard focus targets; focused toast receives an outline for visual indication.
+- Reduced motion: animations disabled under `prefers-reduced-motion: reduce` (CSS fallbacks defined in `globals.css`).
+
+### Theming & CSS Variables
+
+Core custom properties (see `globals.css`):
+
+| Variable | Purpose |
+|----------|---------|
+| `--toast-bg` | Toast background color |
+| `--toast-border` | Border color |
+| `--toast-color-info` | Default/info text color |
+| `--toast-color-success` | Success variant text color |
+| `--toast-color-error` | Error variant text color |
+| `--toast-fade-duration` | Enter/exit animation timing |
+
+Utility classes applied:
+
+- `.toast-base`, `.toast-success`, `.toast-error` for variant styling
+- `.toast-fade-enter/active` & `.toast-fade-exit/active` for transition states
+
+Override by redefining the CSS variables (e.g., within a theme wrapper) or by extending the utility classes.
+
+### Queueing Logic
+
+When `maxVisible` is reached, new toasts enqueue (FIFO). As visible toasts exit (timeout or dismissal) queued items promote into the viewport with staggered enter delays (capped at 300ms).
+
+### Testing Strategy
+
+- Core behaviors (enqueue, auto-dismiss, duplicate collapse, queue promotion, action button) in `ToastProvider.core.test.tsx`.
+- Hover behaviors (extend, pause, none) in `ToastProvider.hover.test.tsx` (re-enable timers via `disableAutoDismissInTest={false}` prop override).
+- Keyboard navigation in `ToastProvider.keyboard.test.tsx`.
+- In test env the interval is skipped by default to avoid `act()` noise; explicit tests opt back in.
+
+### Performance Notes
+
+- State arrays kept minimal; duplicate detection O(n) for visible toasts (n ≤ 4 by default), trivial overhead.
+- Timer interval 100ms—coarse enough to avoid excessive renders while keeping progress bar responsive.
+- Context value memoized to prevent child rerenders (`useMemo`).
+
+### Extension Ideas
+
+- Add `aria-live="assertive"` variant for critical errors.
+- Support persistent toasts (no timeout) and a visual pin icon.
+- Global dismiss shortcut (e.g., bind `Escape` when region focused or app-level listener invoking `dismissAll`).
+
