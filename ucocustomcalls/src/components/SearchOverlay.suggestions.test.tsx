@@ -29,6 +29,8 @@ describe('SearchOverlay suggestions', () => {
       // The Pintail Acrylic should appear as suggestion (title case variant)
       expect(screen.getByText(/pintail acrylic/i)).toBeInTheDocument();
     }, { timeout: 1000 });
+    // Image thumbnail should be present (role img)
+    expect(screen.getByRole('img', { name: /pintail/i })).toBeInTheDocument();
     // Overlay still open (input still present)
     expect(screen.getByPlaceholderText(/search the store/i)).toBeInTheDocument();
   });

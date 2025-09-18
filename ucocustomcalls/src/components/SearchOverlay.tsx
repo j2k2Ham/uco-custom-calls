@@ -80,14 +80,22 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
               {suggestions.map(s => (
                 <li key={s.id}>
                   <button
-                    className="w-full text-left px-5 py-4 hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70"
+                    className="w-full flex items-center gap-4 text-left px-4 py-3 hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70"
                     onClick={() => {
                       router.push(`/products/${s.slug}`);
                       onClose();
                     }}
                   >
-                    <span className="font-medium">{s.title}</span>
-                    <span className="ml-2 text-xs uppercase tracking-wide text-white/50">{s.category}</span>
+                    <div className="h-14 w-20 flex-shrink-0 rounded overflow-hidden bg-black/30 flex items-center justify-center">
+                      {s.images?.[0] && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={s.images[0].src} alt={s.images[0].alt || s.title} className="h-full w-full object-cover" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-medium truncate text-lg leading-snug">{s.title}</div>
+                      <div className="text-xs uppercase tracking-wide text-white/50 mt-1">{s.category}</div>
+                    </div>
                   </button>
                 </li>
               ))}

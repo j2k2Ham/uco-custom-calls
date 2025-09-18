@@ -31,11 +31,19 @@ export default function SearchPage({ searchParams }: { searchParams?: { q?: stri
       {results.length > 0 && (
         <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {results.map(p => (
-            <li key={p.id} className="border border-black/10 rounded-md p-4 hover:shadow-sm transition-shadow">
+            <li key={p.id} className="border border-black/10 rounded-md overflow-hidden hover:shadow-sm transition-shadow bg-white/40 backdrop-blur">
               <Link href={`/products/${p.slug}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70">
-                <h2 className="font-semibold text-lg mb-1">{p.title}</h2>
-                <p className="text-xs uppercase tracking-wide text-black/50 mb-2">{p.category}</p>
-                <p className="text-sm text-black/70 line-clamp-3">{p.description}</p>
+                <div className="aspect-video w-full bg-black/5 flex items-center justify-center overflow-hidden">
+                  {p.images?.[0] && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.images[0].src} alt={p.images[0].alt || p.title} className="h-full w-full object-cover" />
+                  )}
+                </div>
+                <div className="p-4">
+                  <h2 className="font-semibold text-lg mb-1">{p.title}</h2>
+                  <p className="text-xs uppercase tracking-wide text-black/50 mb-2">{p.category}</p>
+                  <p className="text-sm text-black/70 line-clamp-3">{p.description}</p>
+                </div>
               </Link>
             </li>
           ))}
