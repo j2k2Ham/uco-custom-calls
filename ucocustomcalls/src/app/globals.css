@@ -83,10 +83,21 @@ body {
 .animate-fadeInScale { animation: fadeInScale .16s ease-out; }
 .animate-slideDown { animation: slideDown .22s cubic-bezier(.16,.84,.44,1); }
 
+/* Accessible focus outline utility */
+.focus-ring:focus-visible, .focus-ring[data-focus-visible-added] {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brass) 55%, transparent);
+}
+
+/* Subtle shadow focus token (referenced via utility class in components) */
+.shadow-focus:focus-visible { box-shadow: 0 0 0 2px var(--color-brass), 0 0 0 4px rgba(0,0,0,.4); }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fadeInScale, .animate-slideDown { animation: none !important; }
   .will-change-transform { will-change: auto; }
   .toast-reduced-motion { transition: none !important; animation: none !important; }
+  .fade-in { animation: none !important; opacity:1 !important; transform:none !important; }
 }
 
 /* Ambient hero effects */

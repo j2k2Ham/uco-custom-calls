@@ -10,8 +10,8 @@ describe('CategoryButtons', () => {
     expect(duck).not.toHaveAttribute('aria-current');
   });
 
-  it('includes accessories link', () => {
+  it('includes gear link', () => {
     render(<CategoryButtons currentPath="/" />);
-    expect(screen.getByRole('link', { name: /accessories/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /gear/i })).toBeInTheDocument();
   });
 });

@@ -6,7 +6,7 @@ import { CategoryButtons } from '@/components/CategoryButtons';
 import type { Metadata } from 'next';
 
 const title = 'All Products | UCO Custom Calls';
-const description = 'Browse all handcrafted duck & goose calls, lanyards and accessories from UCO Custom Calls.';
+const description = 'Browse all handcrafted duck & goose calls, lanyards and gear from UCO Custom Calls.';
 export const metadata: Metadata = {
   title,
   description,

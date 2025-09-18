@@ -37,7 +37,7 @@ export function AccessoryContent() {
   return (
     <div className="mb-12 grid md:grid-cols-2 gap-8 items-center">
       <div>
-        <p className="text-sky leading-relaxed">Enhance and maintain your waterfowl gear with our curated accessories. From finishing tools and lanyard hardware to future call care kits, this collection extends the life and performance of your calls in the harshest marsh conditions.</p>
+  <p className="text-sky leading-relaxed">Enhance and maintain your waterfowl setup with our curated gear. From finishing tools and lanyard hardware to future call care kits, this collection extends the life and performance of your calls in the harshest marsh conditions.</p>
         <ul className="mt-4 space-y-2 text-sm text-sky/80 list-disc list-inside">
           <li>Hand-selected materials built for cold, wet hunts</li>
           <li>Future maintenance & tuning bundles (coming soon)</li>
@@ -51,7 +51,7 @@ export function AccessoryContent() {
             ref={formRef}
             onSubmit={onSubmit}
             className="mt-4 flex flex-col sm:flex-row gap-3"
-            aria-label="Notify me when new accessories are available"
+            aria-label="Notify me when new gear is available"
             noValidate
           >
             <input
@@ -77,7 +77,7 @@ export function AccessoryContent() {
       <div className="relative aspect-[4/3] w-full rounded-md overflow-hidden ring-1 ring-camo-light/40 shadow-md shadow-black/30">
         <Image
           src="/images/whh.jpg"
-          alt="Accessory display and lanyard hardware"
+          alt="Gear display and lanyard hardware"
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 50vw"

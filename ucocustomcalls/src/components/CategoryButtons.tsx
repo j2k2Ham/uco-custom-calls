@@ -20,7 +20,7 @@ export function CategoryButtons({ className = '', currentPath }: { className?: s
           style = active ? 'bg-brass text-black shadow-sm shadow-black/40' : 'bg-brass text-black/90 hover:shadow-md shadow-sm shadow-black/40';
         } else if (cat.handle === 'goose') {
           style = active ? 'border border-brass bg-brass/15' : 'border border-brass hover:bg-brass/10 hover:scale-[1.03]';
-        } else if (cat.handle === 'accessories') {
+        } else if (cat.handle === 'gear') {
           style = active ? 'border border-camo-light bg-camo-light/60' : 'border border-camo-light hover:bg-camo-light/60 hover:scale-[1.03]';
         } else {
           // lanyards / others

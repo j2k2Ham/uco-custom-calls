@@ -1,4 +1,4 @@
-export type ProductCategory = 'duck' | 'goose' | 'lanyards' | 'accessories';
+export type ProductCategory = 'duck' | 'goose' | 'lanyards' | 'gear';
 
 export interface ProductImage {
   src: string;

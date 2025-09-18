@@ -22,6 +22,22 @@ export const PRODUCTS: Product[] = [
     ratingCount: 57
   },
   {
+    id: "gear-camo-hat",
+    slug: "camo-uco-hat",
+    title: "Camo UCO Hat",
+    description: "Low-profile camo hat featuring the UCO mark. Durable stitching and breathable panels for early season marsh setups.",
+    category: "gear",
+    priceCents: 25_00,
+    images: [
+      { src: "/images/whh.jpg", alt: "Camo UCO Hat front", primary: true }
+    ],
+    badges: ["Apparel"],
+    features: ["Breathable panels", "Embroidered logo", "Lightweight field wear"],
+    inStock: true,
+    ratingValue: 4.9,
+    ratingCount: 12
+  },
+  {
     id: "goose-canada-ocean",
     slug: "canada-goose-ocean-green",
     title: "Canada Goose — Ocean Green",
@@ -58,5 +74,5 @@ export const CATEGORIES = [
   { handle: "duck", name: "Duck Calls" },
   { handle: "goose", name: "Goose Calls" },
   { handle: "lanyards", name: "Paracord Lanyards" },
-  { handle: "accessories", name: "Accessories" }
+  { handle: "gear", name: "Gear" }
 ] as const;

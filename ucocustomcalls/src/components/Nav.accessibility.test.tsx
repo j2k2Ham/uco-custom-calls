@@ -30,7 +30,7 @@ beforeEach(() => {
 describe('Nav keyboard & focus', () => {
   it('opens Shop with Enter and traps focus cycling with Tab/Shift+Tab', async () => {
     render(<Nav />);
-  const shopTrigger = screen.getByRole('button', { name: /shop/i });
+  const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
   const menu = await waitFor(() => {
@@ -51,8 +51,8 @@ describe('Nav keyboard & focus', () => {
 
   it('ArrowRight from Shop trigger moves focus to Hunting trigger', async () => {
     render(<Nav />);
-  const shopTrigger = screen.getByRole('button', { name: /shop/i });
-  const huntingTrigger = screen.getByRole('button', { name: /hunting/i });
+  const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
+  const huntingTrigger = screen.getByRole('menuitem', { name: /hunting/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'ArrowRight'); });
   await waitFor(() => expect(document.activeElement).toBe(huntingTrigger));
@@ -60,7 +60,7 @@ describe('Nav keyboard & focus', () => {
 
   it('persists last focused shop item and restores focus to it on reopen', async () => {
     render(<Nav />);
-  const shopTrigger = screen.getByRole('button', { name: /shop/i });
+  const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
   let menu = await waitFor(() => {
@@ -89,7 +89,7 @@ describe('Nav keyboard & focus', () => {
 
   it('closing with Escape returns focus to trigger', async () => {
     render(<Nav />);
-  const shopTrigger = screen.getByRole('button', { name: /shop/i });
+  const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
   const menu = await waitFor(() => {

@@ -4,7 +4,8 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { PRODUCTS } from "@/lib/products";
 
 export default function HomePage() {
-  const featured = PRODUCTS.slice(0, 6);
+  // Exclude gear items (e.g., hat) from homepage featured; show only call/lanyard products here.
+  const featured = PRODUCTS.filter(p => p.category !== 'gear').slice(0, 6);
   return (
     <>
   <Hero />
