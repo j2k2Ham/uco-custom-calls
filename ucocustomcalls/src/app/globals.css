@@ -99,6 +99,10 @@ body {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brass) 55%, transparent);
 }
 
+/* Category panel fade transition */
+.fade-category-transition { opacity:0; animation: catFade .32s ease forwards; }
+@keyframes catFade { to { opacity:1; } }
+
 /* Subtle shadow focus token (referenced via utility class in components) */
 .shadow-focus:focus-visible { box-shadow: 0 0 0 2px var(--color-brass), 0 0 0 4px rgba(0,0,0,.4); }
 

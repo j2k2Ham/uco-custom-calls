@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: { readonly params: Catego
   if (!category) return notFound();
   const products = PRODUCTS.filter(p => p.category === category.handle);
   return (
-    <CategoryPageFrame title={category.name}>
+    <CategoryPageFrame title={category.name} productCount={products.length} activeHandle={category.handle}>
       <script
         type="application/ld+json"
         suppressHydrationWarning

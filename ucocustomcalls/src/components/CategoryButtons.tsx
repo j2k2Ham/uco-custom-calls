@@ -16,8 +16,9 @@ type CategoryButtonsProps = {
 export function CategoryButtons({ className = '', currentPath, activeHandle, onSelect }: CategoryButtonsProps) {
   const hookPath = usePathname();
   const pathname = currentPath || hookPath;
+  const controlled = Boolean(activeHandle && onSelect);
   return (
-  <div className={["flex flex-wrap gap-4", className].join(' ').trim()}>
+  <div className={["flex flex-wrap gap-4", className].join(' ').trim()} role={controlled ? 'tablist' : undefined}>
       {CATEGORIES.map(cat => {
         const href = `/category/${cat.handle}`;
         const active = activeHandle ? activeHandle === cat.handle : pathname === href;
@@ -33,13 +34,16 @@ export function CategoryButtons({ className = '', currentPath, activeHandle, onS
           // lanyards / others
           style = active ? 'border border-camo-light bg-camo-light' : 'border border-camo-light hover:bg-camo-light hover:scale-[1.03]';
         }
-        if (onSelect && activeHandle) {
+        if (controlled) {
           return (
             <button
               type="button"
               key={cat.handle}
-              onClick={() => onSelect(cat.handle)}
-              aria-pressed={active}
+              onClick={() => onSelect && onSelect(cat.handle)}
+              role="tab"
+              aria-selected={active}
+              aria-controls={`category-panel-${cat.handle}`}
+              id={`category-tab-${cat.handle}`}
               className={[base, style, 'focus-visible:outline-none'].join(' ')}
             >
               {cat.name.replace('Paracord ', '')}
