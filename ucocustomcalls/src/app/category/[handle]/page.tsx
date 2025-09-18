@@ -46,8 +46,12 @@ export default async function CategoryPage({ params }: { readonly params: Catego
           ]))
         }}
       />
-      <CategoryButtons className="mb-6" />
-      <h1 className="text-3xl font-semibold mb-6">{category.name}</h1>
+      <div className="mb-6">
+        <CategoryButtons />
+      </div>
+      <div className="mb-6 h-12 flex items-center">
+        <h1 className="text-3xl font-semibold leading-tight">{category.name}</h1>
+      </div>
       {products.length > 0 ? (
         <ProductGrid products={products} />
       ) : category.handle !== 'gear' ? (
