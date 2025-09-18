@@ -7,7 +7,7 @@ const originalFetch = global.fetch;
 
 describe('AccessoryContent', () => {
   beforeEach(() => {
-    global.fetch = vi.fn(async () => new Response('Subscribed', { status: 202 })) as any;
+    global.fetch = vi.fn(async () => new Response('Subscribed', { status: 202 })) as unknown as typeof fetch;
   });
 
   it('submits email and shows success message', async () => {
@@ -21,7 +21,7 @@ describe('AccessoryContent', () => {
   });
 
   it('shows error on invalid email', async () => {
-    (global.fetch as any) = vi.fn(async () => new Response('Invalid email', { status: 400 }));
+  global.fetch = vi.fn(async () => new Response('Invalid email', { status: 400 })) as unknown as typeof fetch;
     render(<AccessoryContent />);
     const input = screen.getByLabelText(/email address/i) as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'bad' } });

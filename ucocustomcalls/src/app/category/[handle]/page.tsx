@@ -8,8 +8,8 @@ import { CategoryProductArea } from "@/components/CategoryProductArea";
 
 type CategoryPageParams = { handle: string };
 
-export async function generateMetadata({ params }: { params: CategoryPageParams }): Promise<Metadata> {
-  const resolved = await Promise.resolve(params);
+export async function generateMetadata({ params }: { params: Promise<CategoryPageParams> }): Promise<Metadata> {
+  const resolved = await params;
   const category = CATEGORIES.find(c => c.handle === resolved.handle);
   if (!category) return { title: 'Category Not Found' };
   const title = category.handle === 'gear' ? `Gear | UCO Custom Calls` : `${category.name} Calls | UCO Custom Calls`;
@@ -28,24 +28,29 @@ export async function generateMetadata({ params }: { params: CategoryPageParams 
   };
 }
 
-export default async function CategoryPage({ params }: { readonly params: CategoryPageParams }) {
-  const resolved = await Promise.resolve(params);
-  const category = CATEGORIES.find(c => c.handle === resolved.handle);
-  if (!category) return notFound();
-  const products = PRODUCTS.filter(p => p.category === category.handle);
-  return (
-    <CategoryPageFrame title={category.name} productCount={products.length} activeHandle={category.handle}>
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLD([
-            { name: 'Products', url: productsListingUrl() },
-            { name: category.name, url: categoryUrl(category.handle) }
-          ]))
-        }}
-      />
-      <CategoryProductArea products={products} emptyMessage={category.handle === 'gear' ? undefined : 'No items available in this category yet.'} />
-    </CategoryPageFrame>
-  );
+export default async function CategoryPage({ params }: { params: Promise<CategoryPageParams> }) {
+  try {
+    const resolved = await params;
+    const category = CATEGORIES.find(c => c.handle === resolved.handle);
+    if (!category) return notFound();
+    const products = PRODUCTS.filter(p => p.category === category.handle);
+    return (
+      <CategoryPageFrame title={category.name} productCount={products.length} activeHandle={category.handle}>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbJsonLD([
+              { name: 'Products', url: productsListingUrl() },
+              { name: category.name, url: categoryUrl(category.handle) }
+            ]))
+          }}
+        />
+        <CategoryProductArea products={products} emptyMessage={category.handle === 'gear' ? undefined : 'No items available in this category yet.'} />
+      </CategoryPageFrame>
+    );
+  } catch (err) {
+    console.error('[CategoryPage] runtime error', err);
+    throw err;
+  }
 }

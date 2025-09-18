@@ -13,8 +13,8 @@ interface ProductPageParams { readonly slug: string }
 
 export const dynamicParams = true;
 
-export async function generateMetadata({ params }: { params: ProductPageParams }): Promise<Metadata> {
-  const resolved = await Promise.resolve(params);
+export async function generateMetadata({ params }: { params: Promise<ProductPageParams> }): Promise<Metadata> {
+  const resolved = await params;
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return { title: 'Product Not Found' };
   const title = product.seo?.metaTitle || product.title;
@@ -39,12 +39,8 @@ export async function generateMetadata({ params }: { params: ProductPageParams }
   };
 }
 
-interface ProductPageProps {
-  readonly params: ProductPageParams;
-}
-
-export default async function ProductPage({ params }: ProductPageProps) {
-  const resolved = await Promise.resolve(params);
+export default async function ProductPage({ params }: { params: Promise<ProductPageParams> }) {
+  const resolved = await params;
   const product = PRODUCTS.find(p => p.slug === resolved.slug);
   if (!product) return notFound();
 

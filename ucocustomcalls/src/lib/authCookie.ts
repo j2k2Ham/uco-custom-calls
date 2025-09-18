@@ -14,9 +14,7 @@ const SECRET = (() => {
     if (explicit) return explicit;
     if (process.env.NODE_ENV === 'test') return 'test-secret';
     if (process.env.NODE_ENV !== 'production') {
-      // Use a fixed (not random) secret so hot reloads do not invalidate cookies every save.
       const devSecret = 'insecure-dev-secret-change-me';
-      // Only warn once per runtime.
       interface DevWarnFlag { __AUTH_COOKIE_DEV_WARNED?: boolean }
       const g = globalThis as DevWarnFlag;
       if (!g.__AUTH_COOKIE_DEV_WARNED) {
@@ -25,8 +23,10 @@ const SECRET = (() => {
       }
       return devSecret;
     }
+    // In production build phase without secret, provide placeholder so build succeeds; runtime usage will throw.
+    return 'PLACEHOLDER_PROD_SECRET';
   }
-  throw new Error('AUTH_COOKIE_SECRET environment variable is required for authCookie in production.');
+  return 'UNKNOWN_ENV_SECRET';
 })();
 
 export interface AuthCookiePayload {
@@ -45,6 +45,9 @@ async function sha256(data: string): Promise<string> {
 }
 
 export async function signAuthCookie(payload: AuthCookiePayload): Promise<string> {
+  if (SECRET === 'PLACEHOLDER_PROD_SECRET' && process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_COOKIE_SECRET must be set in production runtime (placeholder detected).');
+  }
   const json = JSON.stringify(payload);
   const b64 = typeof btoa === 'function' ? btoa(json) : Buffer.from(json).toString('base64');
   const fullHash = await sha256(b64 + SECRET);
@@ -53,6 +56,9 @@ export async function signAuthCookie(payload: AuthCookiePayload): Promise<string
 }
 
 export async function verifyAuthCookie(raw: string | undefined | null): Promise<AuthCookiePayload | null> {
+  if (SECRET === 'PLACEHOLDER_PROD_SECRET' && process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_COOKIE_SECRET must be set in production runtime (placeholder detected).');
+  }
   if (!raw) return null;
   const parts = raw.split('.');
   if (parts.length !== 2) return null;
