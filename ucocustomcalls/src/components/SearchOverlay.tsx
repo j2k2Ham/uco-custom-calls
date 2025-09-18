@@ -1,21 +1,21 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { searchProducts } from '@/lib/productStore';
+import { useRouter } from 'next/navigation';
 
 interface SearchOverlayProps { open: boolean; onClose: () => void }
 
 export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ReturnType<typeof searchProducts>>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [suggestions, setSuggestions] = useState<ReturnType<typeof searchProducts>>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 10);
       setQuery('');
-      setResults([]);
       setSubmitted(false);
     }
   }, [open]);
@@ -23,9 +23,10 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === 'Escape') { onClose(); }
     if (e.key === 'Enter') {
-      const r = searchProducts(query, 30);
-      setResults(r);
+      searchProducts(query, 30); // warm cache / parity with previous behavior
       setSubmitted(true);
+      onClose();
+      router.push(`/search?q=${encodeURIComponent(query)}`);
     }
   };
 
@@ -33,10 +34,22 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     setQuery(v);
     if (submitted) {
       // User started typing a new query; clear previous results until next Enter
-      setResults([]);
       setSubmitted(false);
     }
   };
+
+  // Debounced suggestions
+  useEffect(() => {
+    if (!open) return;
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    const handle = setTimeout(() => {
+  setSuggestions(searchProducts(query, 5));
+    }, 220);
+    return () => clearTimeout(handle);
+  }, [query, open]);
 
   if (!open) return null;
   return (
@@ -47,7 +60,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
         className="absolute top-6 right-6 text-2xl leading-none px-3 py-1 hover:text-brass"
       >×</button>
       <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <div className="w-full max-w-2xl">
+        <div className="relative w-full flex justify-center">
           <input
             ref={inputRef}
             type="text"
@@ -56,30 +69,29 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             onKeyDown={onKeyDown}
             placeholder="search the store"
             aria-label="Search products"
-            className="w-full bg-transparent text-4xl font-medium outline-none placeholder:text-white/30 border-b-2 border-brass pb-3"
+            className="bg-transparent text-4xl font-medium tracking-wide outline-none placeholder:text-white/30 border-b-2 border-brass pb-3 transition-[width,padding] duration-300 ease-out w-[40%] min-w-[260px] focus:w-[65%] text-center font-semibold caret-white"
+            style={{ maxWidth: '900px', paddingLeft: '0', paddingRight: '0' }}
           />
+          {/* Invisible width balancer for center-grow illusion (optional future enhancement) */}
         </div>
-        {submitted && (
-          <div className="mt-10 w-full max-w-3xl overflow-y-auto max-h-[50vh] px-1">
-            {results.length === 0 ? (
-              <p className="text-white/60 text-sm">No results.</p>
-            ) : (
-              <ul className="divide-y divide-white/10">
-                {results.map(p => (
-                  <li key={p.id}>
-                    <Link
-                      href={`/products/${p.slug}`}
-                      onClick={onClose}
-                      className="block py-4 hover:text-brass focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70"
-                    >
-                      <span className="font-semibold text-lg">{p.title}</span>
-                      <span className="text-white/50 ml-2 text-xs uppercase tracking-wide">{p.category}</span>
-                      <div className="text-sm text-white/70 line-clamp-2 mt-1">{p.description}</div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+        {suggestions.length > 0 && !submitted && (
+          <div className="mt-8 w-full max-w-2xl">
+            <ul className="bg-black/40 backdrop-blur rounded-md overflow-hidden divide-y divide-white/10">
+              {suggestions.map(s => (
+                <li key={s.id}>
+                  <button
+                    className="w-full text-left px-5 py-4 hover:bg-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70"
+                    onClick={() => {
+                      router.push(`/products/${s.slug}`);
+                      onClose();
+                    }}
+                  >
+                    <span className="font-medium">{s.title}</span>
+                    <span className="ml-2 text-xs uppercase tracking-wide text-white/50">{s.category}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

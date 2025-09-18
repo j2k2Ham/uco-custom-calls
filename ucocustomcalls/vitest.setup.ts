@@ -56,3 +56,15 @@ afterAll(() => {
 	console.error = originalError;
 	console.warn = originalWarn;
 });
+
+// Basic mock for next/navigation to support useRouter in component tests
+vi.mock('next/navigation', () => {
+	const push = vi.fn();
+	const replace = vi.fn();
+	const prefetch = vi.fn();
+	return {
+		useRouter: () => ({ push, replace, prefetch, back: vi.fn(), forward: vi.fn(), refresh: vi.fn() }),
+		usePathname: () => '/',
+		useSearchParams: () => new URLSearchParams(),
+	};
+});
