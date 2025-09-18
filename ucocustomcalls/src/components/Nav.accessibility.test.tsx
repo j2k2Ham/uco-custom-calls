@@ -27,13 +27,17 @@ beforeEach(() => {
   ls.clear();
 });
 
-describe('Nav keyboard & persistence', () => {
+describe('Nav keyboard & focus', () => {
   it('opens Shop with Enter and traps focus cycling with Tab/Shift+Tab', async () => {
     render(<Nav />);
-    const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
+  const shopTrigger = screen.getByRole('button', { name: /shop/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
-  const menu = await screen.findByRole('menu', { name: /shop/i });
+  const menu = await waitFor(() => {
+    const el = shopTrigger.parentElement?.querySelector('ul[aria-labelledby]');
+    if(!el) throw new Error('submenu not found');
+    return el as HTMLElement;
+  });
   const items = Array.from(menu.querySelectorAll('a')) as HTMLElement[];
   expect(items.length).toBeGreaterThan(0);
   await waitFor(() => expect(document.activeElement).toBe(items[0]));
@@ -47,8 +51,8 @@ describe('Nav keyboard & persistence', () => {
 
   it('ArrowRight from Shop trigger moves focus to Hunting trigger', async () => {
     render(<Nav />);
-    const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
-    const huntingTrigger = screen.getByRole('menuitem', { name: /hunting/i });
+  const shopTrigger = screen.getByRole('button', { name: /shop/i });
+  const huntingTrigger = screen.getByRole('button', { name: /hunting/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'ArrowRight'); });
   await waitFor(() => expect(document.activeElement).toBe(huntingTrigger));
@@ -56,10 +60,14 @@ describe('Nav keyboard & persistence', () => {
 
   it('persists last focused shop item and restores focus to it on reopen', async () => {
     render(<Nav />);
-    const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
+  const shopTrigger = screen.getByRole('button', { name: /shop/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
-  let menu = await screen.findByRole('menu', { name: /shop/i });
+  let menu = await waitFor(() => {
+    const el = shopTrigger.parentElement?.querySelector('ul[aria-labelledby]');
+    if(!el) throw new Error('submenu not found');
+    return el as HTMLElement;
+  });
   const items = Array.from(menu.querySelectorAll('a')) as HTMLElement[];
     // activate second item
   const second = items[1];
@@ -68,30 +76,27 @@ describe('Nav keyboard & persistence', () => {
     // reopen
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
-  menu = await screen.findByRole('menu', { name: /shop/i });
+  menu = await waitFor(() => {
+    const el = shopTrigger.parentElement?.querySelector('ul[aria-labelledby]');
+    if(!el) throw new Error('submenu not found');
+    return el as HTMLElement;
+  });
     await waitFor(() => {
       expect(document.activeElement?.getAttribute('href')).toBe(second.getAttribute('href'));
     });
   });
 
-  it('stores dropdown open state and restores it (desktop width)', () => {
-    // Pretend previous session left both open (only one should restore at a time based on stored flags)
-    ls.setItem('nav.shop', '1');
-    ls.setItem('nav.hunting', '1');
-    // desktop width
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
-    render(<Nav />);
-    // Both may attempt to restore; mutual exclusivity keeps as implemented (we accept at least one open)
-    const possibleMenus = screen.getAllByRole('menu');
-    expect(possibleMenus.length).toBeGreaterThanOrEqual(1);
-  });
 
   it('closing with Escape returns focus to trigger', async () => {
     render(<Nav />);
-    const shopTrigger = screen.getByRole('menuitem', { name: /shop/i });
+  const shopTrigger = screen.getByRole('button', { name: /shop/i });
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
-  const menu = await screen.findByRole('menu', { name: /shop/i });
+  const menu = await waitFor(() => {
+    const el = shopTrigger.parentElement?.querySelector('ul[aria-labelledby]');
+    if(!el) throw new Error('submenu not found');
+    return el as HTMLElement;
+  });
   const first = menu.querySelector('a') as HTMLElement;
   await waitFor(() => expect(document.activeElement).toBe(first));
   await act(async () => { key(first, 'Escape'); });
