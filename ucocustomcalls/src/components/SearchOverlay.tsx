@@ -124,17 +124,23 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             onKeyDown={onKeyDown}
             placeholder="search the store"
             aria-label="Search products"
+            aria-autocomplete="list"
+            aria-controls={suggestions.length > 0 ? 'search-suggestion-list' : undefined}
+            aria-activedescendant={activeIndex >= 0 && suggestions[activeIndex] ? `search-suggestion-${suggestions[activeIndex].id}` : undefined}
             className="bg-transparent text-4xl font-medium tracking-wide outline-none placeholder:text-white/30 border-b-2 border-brass pb-3 transition-[width,padding] duration-300 ease-out w-[40%] min-w-[260px] focus:w-[65%] text-center font-semibold caret-white"
             style={{ maxWidth: '900px', paddingLeft: '0', paddingRight: '0' }}
           />
           {/* Invisible width balancer for center-grow illusion (optional future enhancement) */}
         </div>
         {suggestions.length > 0 && !submitted && query.trim() !== '' && (
-          <div className="mt-8 w-full max-w-2xl">
-            <ul className="bg-black/40 backdrop-blur rounded-md overflow-hidden divide-y divide-white/10">
+          <div className="mt-8 w-full max-w-2xl" role="presentation">
+            <ul id="search-suggestion-list" role="listbox" className="bg-black/40 backdrop-blur rounded-md overflow-hidden divide-y divide-white/10">
               {suggestions.map((s, idx) => (
-                <li key={s.id}>
+                <li key={s.id} role="presentation">
                   <button
+                    id={`search-suggestion-${s.id}`}
+                    role="option"
+                    aria-selected={idx === activeIndex}
                     className={`w-full flex items-center gap-4 text-left px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/70 ${idx === activeIndex ? 'bg-black/60' : 'hover:bg-black/50'}`}
                     onClick={() => {
                       window.dispatchEvent(new CustomEvent('analytics', { detail: { type: 'suggestion_click', slug: s.slug, query } }));

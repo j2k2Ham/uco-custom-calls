@@ -35,8 +35,8 @@ describe('SearchOverlay enhancements', () => {
     const input = screen.getByPlaceholderText(/search the store/i);
     fireEvent.change(input, { target: { value: 'canada' } });
     await waitFor(() => {
-      const btns = screen.getAllByRole('button');
-      expect(btns.some(b => /canada/i.test(b.textContent||''))).toBe(true);
+      const opts = screen.getAllByRole('option');
+      expect(opts.some(b => /canada/i.test(b.textContent||''))).toBe(true);
     });
     fireEvent.keyDown(input, { key: 'ArrowDown' }); // focus first suggestion
     fireEvent.keyDown(input, { key: 'Enter' }); // select it
@@ -70,8 +70,8 @@ describe('SearchOverlay enhancements', () => {
       const input = screen.getByPlaceholderText(/search the store/i);
       fireEvent.change(input, { target: { value: 'pintail' } });
       await waitFor(() => {
-        const btns = screen.getAllByRole('button');
-        expect(btns.some(b => /pintail/i.test(b.textContent||''))).toBe(true);
+        const opts = screen.getAllByRole('option');
+        expect(opts.some(b => /pintail/i.test(b.textContent||''))).toBe(true);
       });
       fireEvent.keyDown(input, { key: 'ArrowDown' });
       fireEvent.keyDown(input, { key: 'Enter' }); // suggestion_click
@@ -85,5 +85,27 @@ describe('SearchOverlay enhancements', () => {
     } finally {
       window.removeEventListener('analytics', handler);
     }
+  });
+
+  it('applies ARIA listbox/option roles and updates aria-activedescendant', async () => {
+    render(<Wrapper />);
+    fireEvent.click(screen.getByRole('button', { name: /search the store/i }));
+    const input = screen.getByPlaceholderText(/search the store/i);
+    fireEvent.change(input, { target: { value: 'pint' } });
+    await waitFor(() => {
+      const listbox = screen.getByRole('listbox');
+      expect(listbox).toBeInTheDocument();
+      const options = screen.getAllByRole('option');
+      expect(options.length).toBeGreaterThan(0);
+    });
+    // Initially no active descendant
+    expect(input).not.toHaveAttribute('aria-activedescendant');
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await waitFor(() => {
+      expect(input.getAttribute('aria-activedescendant')).toMatch(/^search-suggestion-/);
+    });
+    const activeId = input.getAttribute('aria-activedescendant')!;
+    const activeEl = document.getElementById(activeId);
+    expect(activeEl).toHaveAttribute('aria-selected', 'true');
   });
 });
