@@ -5,7 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Price } from "./Price";
 
-export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CartDrawer({ open, onClose }: { readonly open: boolean; readonly onClose: () => void }) {
   const { items, remove, total, clear } = useCart();
 
   return (

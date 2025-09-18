@@ -21,7 +21,7 @@ export function ProfileMenu() {
           {user?.name && <span className="text-sm max-w-[8rem] truncate" data-testid="user-first-name">{user.name.split(' ')[0]}</span>}
         </button>
         {menuOpen && (
-          <ul role="menu" className="absolute top-full left-0 mt-2 w-52 bg-camo border border-camo-light rounded shadow-lg py-2 z-50">
+          <ul className="absolute top-full left-0 mt-2 w-52 bg-camo border border-camo-light rounded shadow-lg py-2 z-50" aria-label="Account menu">
             {!user && (
               <li>
                 <button role="menuitem" className="w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => { setMode('login'); setMenuOpen(false); setLoginOpen(true); }}>Login</button>
@@ -29,7 +29,7 @@ export function ProfileMenu() {
             )}
             {user && (
               <>
-                <li className="px-3 pb-2 pt-1 text-xs uppercase tracking-wide text-sky/70" role="presentation">Welcome{user.name ? `, ${user.name.split(' ')[0]}` : ''}</li>
+                <li className="px-3 pb-2 pt-1 text-xs uppercase tracking-wide text-sky/70">Welcome{user.name ? `, ${user.name.split(' ')[0]}` : ''}</li>
                 <li>
                   <Link href="/account" role="menuitem" className="block w-full text-left px-3 py-2 hover:bg-camo-light" onClick={() => setMenuOpen(false)}>My Account</Link>
                 </li>
@@ -46,7 +46,7 @@ export function ProfileMenu() {
   );
 }
 
-function LoginDrawer({ open, onClose, mode, setMode }: { open: boolean; onClose: () => void; mode: 'login' | 'create'; setMode: (m: 'login' | 'create') => void }) {
+function LoginDrawer({ open, onClose, mode, setMode }: { readonly open: boolean; readonly onClose: () => void; readonly mode: 'login' | 'create'; readonly setMode: (m: 'login' | 'create') => void }) {
   const { login, loginWithProvider, createAccount, loading } = useUser();
   const { push } = useToast();
   const [email, setEmail] = React.useState('');
@@ -80,10 +80,10 @@ function LoginDrawer({ open, onClose, mode, setMode }: { open: boolean; onClose:
   }
 
   return (
-    <Dialog open={open} onClose={onClose} className="relative z-50">
+  <Dialog open={open} onClose={onClose} className="relative z-50" aria-labelledby="login-drawer-title">
       <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
       <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-camo p-6 shadow-2xl flex flex-col">
-        <Dialog.Title className="text-lg font-semibold">{mode === 'login' ? 'Login' : 'Create Account'}</Dialog.Title>
+  <div id="login-drawer-title" className="text-lg font-semibold">{mode === 'login' ? 'Login' : 'Create Account'}</div>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {mode === 'create' && (
             <div className="grid grid-cols-2 gap-4">

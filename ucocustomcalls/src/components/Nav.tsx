@@ -5,6 +5,10 @@ import { usePathname } from 'next/navigation';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { NavStorageKey, getStored, setStored } from '@/lib/navStorage';
 
+function Caret({ open }: { readonly open: boolean }) {
+  return <ChevronDownIcon aria-hidden className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />;
+}
+
 export function Nav() {
   const shopItems = [
     { href: "/category/duck", label: "Duck Calls" },
@@ -87,13 +91,9 @@ export function Nav() {
     };
   }, [openShop, openHunting]);
 
-  function Caret({ open }: { open: boolean }) {
-    return <ChevronDownIcon aria-hidden className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />;
-  }
-
   return (
     <nav aria-label="Primary">
-      <ul className="hidden md:flex gap-6 items-center" role="menubar" aria-label="Main menu">
+  <ul className="hidden md:flex gap-6 items-center" aria-label="Main menu">
         <li role="none">
           <Link
             role="menuitem"
@@ -136,8 +136,7 @@ export function Nav() {
           {openShop && (
             <ul
               ref={shopMenuRef}
-              role="menu"
-              aria-label="Shop"
+              aria-label="Shop submenu"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
             >
               {shopItems.map((item) => {
@@ -178,10 +177,7 @@ export function Nav() {
                             const next = items[(idxCurrent + 1) % items.length];
                             next?.focus();
                           }
-                        } else if (e.key === 'ArrowRight') {
-                          e.preventDefault();
-                          huntingBtnRef.current?.focus();
-                        } else if (e.key === 'ArrowLeft') {
+                        } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                           e.preventDefault();
                           huntingBtnRef.current?.focus();
                         } else if (e.key === 'Escape') {
@@ -229,8 +225,7 @@ export function Nav() {
           {openHunting && (
             <ul
               ref={huntingMenuRef}
-              role="menu"
-              aria-label="Hunting"
+              aria-label="Hunting submenu"
               className="absolute mt-2 left-0 min-w-[12rem] rounded-md border border-camo-light bg-camo shadow-lg py-2 flex flex-col focus:outline-none animate-fadeInScale"
             >
               {huntingItems.map((item) => {
@@ -271,10 +266,7 @@ export function Nav() {
                             const next = items[(idxCurrent + 1) % items.length];
                             next?.focus();
                           }
-                        } else if (e.key === 'ArrowLeft') {
-                          e.preventDefault();
-                          shopBtnRef.current?.focus();
-                        } else if (e.key === 'ArrowRight') {
+                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                           e.preventDefault();
                           shopBtnRef.current?.focus();
                         } else if (e.key === 'Escape') {

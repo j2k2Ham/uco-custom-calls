@@ -59,8 +59,8 @@ export async function GET(req: Request) {
   return new Response(image.body, {
     headers: {
       'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
-      , 'ETag': etag
+      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      'ETag': etag
     }
   });
 }

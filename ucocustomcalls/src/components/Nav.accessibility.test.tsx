@@ -60,7 +60,7 @@ describe('Nav keyboard & persistence', () => {
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
   let menu = await screen.findByRole('menu', { name: /shop/i });
-  let items = Array.from(menu.querySelectorAll('a')) as HTMLElement[];
+  const items = Array.from(menu.querySelectorAll('a')) as HTMLElement[];
     // activate second item
   const second = items[1];
   second.addEventListener('click', e => e.preventDefault());
@@ -68,8 +68,7 @@ describe('Nav keyboard & persistence', () => {
     // reopen
     shopTrigger.focus();
   await act(async () => { key(shopTrigger, 'Enter'); });
-    menu = await screen.findByRole('menu', { name: /shop/i });
-    items = Array.from(menu.querySelectorAll('a')) as HTMLElement[];
+  menu = await screen.findByRole('menu', { name: /shop/i });
     await waitFor(() => {
       expect(document.activeElement?.getAttribute('href')).toBe(second.getAttribute('href'));
     });

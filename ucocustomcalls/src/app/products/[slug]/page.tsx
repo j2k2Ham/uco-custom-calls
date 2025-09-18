@@ -8,8 +8,8 @@ import { AudioPlayer } from "@/components/AudioPlayer";
 import { formatPriceFromCents, getPriceCents } from "@/types/product";
 import { ProductGallery } from "@/components/ProductGallery";
 
-interface ProductPageParams { slug: string }
-interface ProductPageProps { params: ProductPageParams | Promise<ProductPageParams> }
+interface ProductPageParams { readonly slug: string }
+interface ProductPageProps { readonly params: ProductPageParams | Promise<ProductPageParams> }
 
 export const dynamicParams = true;
 
