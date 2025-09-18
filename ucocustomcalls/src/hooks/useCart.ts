@@ -1,5 +1,4 @@
 "use client";
-"use client";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useUser } from './useUser';
 import type { Product } from "@/types/product";
