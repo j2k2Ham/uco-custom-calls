@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ProfileMenu } from './ProfileMenu';
 import AccountPage from '@/app/account/page';
 import { renderWithProviders } from '@/test/providers';
@@ -40,5 +41,43 @@ describe('AccountPage profile editing', () => {
     // Header should reflect new first name (click menu to refresh inline text rendering if needed)
     fireEvent.click(screen.getByLabelText(/account menu/i));
     expect(screen.getByTestId('user-first-name').textContent).toBe('Updated');
+  });
+  it('changes password successfully (stub)', async () => {
+    // Seed user directly
+    localStorage.setItem('uco.user', JSON.stringify({ id: 'u_pw', email: 'pw@example.com', provider: 'local', name: 'Pw User' }));
+    renderWithProviders(<AccountPage />);
+  await userEvent.type(await screen.findByLabelText(/^current password$/i), 'oldpw');
+  await userEvent.type(screen.getByLabelText(/^new password$/i), 'newpw123');
+  await userEvent.type(screen.getByLabelText(/^confirm new password$/i), 'newpw123');
+  await userEvent.click(screen.getByRole('button', { name: /change password/i }));
+  expect(await screen.findByText(/updated/i)).toBeInTheDocument();
+  });
+
+  it('validates password change errors', async () => {
+    localStorage.setItem('uco.user', JSON.stringify({ id: 'u_pw2', email: 'err@example.com', provider: 'local', name: 'Err User' }));
+    renderWithProviders(<AccountPage />);
+    // Too short current
+  await userEvent.type(await screen.findByLabelText(/^current password$/i), 'abc');
+  await userEvent.type(screen.getByLabelText(/^new password$/i), 'abcdef');
+  await userEvent.type(screen.getByLabelText(/^confirm new password$/i), 'abcdef');
+    await userEvent.click(screen.getByRole('button', { name: /change password/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/current password invalid/i);
+    // Fix current but mismatch next/confirm
+  const currentField = screen.getByLabelText(/^current password$/i);
+    await userEvent.clear(currentField); await userEvent.type(currentField, 'oldpw');
+  const nextField = screen.getByLabelText(/^new password$/i);
+  const confirmField = screen.getByLabelText(/^confirm new password$/i);
+    await userEvent.clear(nextField); await userEvent.type(nextField, 'abcdef');
+    await userEvent.clear(confirmField); await userEvent.type(confirmField, 'abcdeg');
+    await userEvent.click(screen.getByRole('button', { name: /change password/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/match/i);
+    // Same as current
+  // Use sufficiently long password to bypass length check and hit "must differ" rule
+  const longCurrent = 'CurrentPassword123';
+  await userEvent.clear(currentField); await userEvent.type(currentField, longCurrent);
+  await userEvent.clear(nextField); await userEvent.type(nextField, longCurrent);
+  await userEvent.clear(confirmField); await userEvent.type(confirmField, longCurrent);
+    await userEvent.click(screen.getByRole('button', { name: /change password/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/must differ/i);
   });
 });

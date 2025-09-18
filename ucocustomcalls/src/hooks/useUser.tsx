@@ -17,6 +17,7 @@ interface UserContextShape {
   createAccount: (data: { firstName: string; lastName: string; email: string; password: string }) => Promise<User>;
   logout: () => void;
   updateProfile: (data: { firstName: string; lastName: string }) => Promise<User>;
+  changePassword: (data: { current: string; next: string; confirm: string }) => Promise<void>;
 }
 
 const UserCtx = createContext<UserContextShape | null>(null);
@@ -131,7 +132,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser(next); persist(next); setLoading(false); return next;
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout, updateProfile }), [user, loading, login, loginWithProvider, createAccount, logout, updateProfile]);
+  const changePassword = useCallback(async ({ current, next, confirm }: { current: string; next: string; confirm: string }) => {
+    if (!user) throw new Error('Not authenticated');
+    // Dev stub: we do not actually store password, so just validate shape
+    if (current.trim().length < 4) throw new Error('Current password invalid');
+    if (next.trim().length < 6) throw new Error('New password too short');
+    if (next !== confirm) throw new Error('Passwords do not match');
+    if (current === next) throw new Error('New password must differ');
+    // Pretend delay for UX realism (skipped in tests)
+    if (!SKIP_DELAY) await fakeDelay(300);
+    return; // success: nothing to persist in mock
+  }, [user]);
+
+  const value = useMemo(() => ({ user, loading, login, loginWithProvider, createAccount, logout, updateProfile, changePassword }), [user, loading, login, loginWithProvider, createAccount, logout, updateProfile, changePassword]);
 
   return <UserCtx.Provider value={value}>{children}</UserCtx.Provider>;
 }

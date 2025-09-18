@@ -13,11 +13,17 @@ export default function AccountPage() {
 }
 
 function AccountContent() {
-  const { user, updateProfile } = useUser();
+  const { user, updateProfile, changePassword } = useUser();
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
   const [status, setStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [error, setError] = React.useState<string | null>(null);
+  // Password change state (dev stub only)
+  const [pwCurrent, setPwCurrent] = React.useState('');
+  const [pwNext, setPwNext] = React.useState('');
+  const [pwConfirm, setPwConfirm] = React.useState('');
+  const [pwStatus, setPwStatus] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [pwError, setPwError] = React.useState<string | null>(null);
   const currentFirst = user?.name?.split(' ')[0];
   React.useEffect(() => {
     if (user?.name) {
@@ -58,6 +64,27 @@ function AccountContent() {
         {error && <div className="text-sm text-red-400" role="alert">{error}</div>}
         <button type="submit" disabled={status==='saving'} className="bg-brass text-black rounded px-4 py-2 disabled:opacity-60">{status==='saving' ? 'Saving...' : 'Save Changes'}</button>
         {status === 'saved' && <span className="ml-3 text-sm text-green-400" role="status">Saved</span>}
+      </form>
+      <form onSubmit={async e => { e.preventDefault(); setPwStatus('saving'); setPwError(null); try { await changePassword({ current: pwCurrent, next: pwNext, confirm: pwConfirm }); setPwStatus('saved'); setTimeout(()=>setPwStatus('idle'), 1500); setPwCurrent(''); setPwNext(''); setPwConfirm(''); } catch (err: any) { setPwError(err.message || 'Change failed'); setPwStatus('error'); } }} className="bg-camo-light/10 rounded p-4 border border-camo-light space-y-4">
+        <h3 className="font-medium">Change Password (Stub)</h3>
+        <div className="grid gap-4">
+          <div>
+            <label htmlFor="pw-current" className="block text-xs mb-1 uppercase tracking-wide">Current Password</label>
+            <input id="pw-current" type="password" value={pwCurrent} onChange={e=>setPwCurrent(e.target.value)} className="w-full px-3 py-2 rounded bg-camo-light/30 border border-camo-light" />
+          </div>
+          <div>
+            <label htmlFor="pw-next" className="block text-xs mb-1 uppercase tracking-wide">New Password</label>
+            <input id="pw-next" type="password" value={pwNext} onChange={e=>setPwNext(e.target.value)} className="w-full px-3 py-2 rounded bg-camo-light/30 border border-camo-light" />
+          </div>
+          <div>
+            <label htmlFor="pw-confirm" className="block text-xs mb-1 uppercase tracking-wide">Confirm New Password</label>
+            <input id="pw-confirm" type="password" value={pwConfirm} onChange={e=>setPwConfirm(e.target.value)} className="w-full px-3 py-2 rounded bg-camo-light/30 border border-camo-light" />
+          </div>
+        </div>
+        {pwError && <div className="text-sm text-red-400" role="alert">{pwError}</div>}
+        <button type="submit" disabled={pwStatus==='saving'} className="bg-brass text-black rounded px-4 py-2 disabled:opacity-60">{pwStatus==='saving' ? 'Changing...' : 'Change Password'}</button>
+        {pwStatus === 'saved' && <span className="ml-3 text-sm text-green-400" role="status">Updated</span>}
+        <p className="text-xs text-sky/60">This is a non-persistent demo; passwords are not stored.</p>
       </form>
       <div className="text-sm text-sky/70">Future enhancements: edit profile, change password, order history.</div>
       {currentFirst && <p className="text-sm">Welcome back, {currentFirst}! 🎯</p>}

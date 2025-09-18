@@ -163,15 +163,37 @@ First name display & greeting: After login or account creation, the first token 
 
 Path: `/account` – Displays a simple authenticated view of the current user (email, name if present, provider). If the visitor is not logged in a guidance message with a link back home is shown. Navigation occurs via the "My Account" item in the profile dropdown (rendered as a Next.js `Link`). This page is a starting point for future enhancements (profile editing, order history, password changes). Client-only context is used; server protection would require replacing the mock auth layer with a real session mechanism.
 
-#### Development Auth Cookie & Middleware
+#### Development Auth Cookie (Signed) & Middleware Verification
 
-- On login / create account a plain (UNSIGNED) cookie `uco_auth` is written containing a JSON payload: `{ id, email, name, provider }`.
-- Cookie lifetime: 7 days; cleared on logout.
-- A simple `middleware.ts` checks for `uco_auth` when requesting `/account` and redirects to `/` with `?from=account` if absent. This is purely illustrative and not secure.
+To make local flows slightly more realistic, the dev cookie is now weakly signed.
 
-Security Note: Do NOT ship this unsandboxed cookie to production; implement signed / httpOnly / secure session tokens instead.
+Cookie: `uco_auth=<base64(json)>.<sig>` where:
 
-#### Editing Profile (Name Only)
+- `json` = `{ id, email, name, provider }`
+- `sig`   = first 24 hex chars of SHA-256(`base64(json)` + dev secret)
+
+Implementation: `src/lib/authCookie.ts` exports `signAuthCookie` & `verifyAuthCookie`.
+
+Lifecycle:
+
+1. On login / account creation the cookie is (re)issued (7 day expiry).
+2. On logout the cookie is cleared (Max-Age=0).
+3. `middleware.ts` (matcher `/account`) now:
+  - Redirects to `/` if cookie is missing.
+  - Verifies the signature; invalid or malformed token ➜ clears cookie + redirect with `?from=account`.
+4. A valid token simply allows the request (no server session created—still client trust only).
+
+Limitations (Dev Only):
+
+- Shared static secret (`dev-secret`) in source; rotate to env var for any staging.
+- Not httpOnly, Secure, or SameSite tuned.
+- No replay / rotation / expiry enforcement beyond cookie expiry.
+
+Production Replacement: Use a real session (JWT w/ HS/RS signature stored httpOnly; or server session store + opaque token). Add CSRF protections for state-changing routes.
+
+Testing: `src/lib/authCookie.test.ts` covers happy path, tampering, and malformed tokens.
+
+#### Editing Profile (Name Only) & Password Change Stub
 
 The Account page now includes an inline form to update first and last name:
 
@@ -184,10 +206,21 @@ Validation: Both first and last names must be non-empty (trimmed). Future enhanc
 
 Re-login name restoration: When logging in with email/password, if a matching entry exists in the registry, the previously stored `name` is restored even if the login form does not collect names (i.e. future flows could omit name fields).
 
+Password Change (Stub): The Account page includes a non-persistent "Change Password" form calling `changePassword` in `useUser`. Validation only:
+
+- Current password length ≥ 4
+- New password length ≥ 6
+- New matches confirmation
+- New differs from current
+
+Successful submission shows an `Updated` status badge then resets fields; no password is stored.
+
 Testing Notes:
 
-- `ProfileMenu.test.tsx` covers: login, SSO, persistence across remount, account creation (including name display), and duplicate prevention.
-- Artificial network delays are bypassed under `NODE_ENV==='test'` via `SKIP_DELAY` so tests remain fast.
+- `ProfileMenu.test.tsx` covers login flows, account creation, duplicate prevention, name restoration, navigation.
+- `AccountPage.test.tsx` covers profile name editing plus password stub (success + validation errors).
+- `authCookie.test.ts` validates signing/verification logic.
+- Artificial delays skipped in test env via `SKIP_DELAY`.
 
 Planned / Optional Enhancements:
 
