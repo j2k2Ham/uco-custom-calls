@@ -16,17 +16,22 @@ export interface Toast {
 
 interface ToastContextShape {
   push: (msg: string, opts?: Partial<Omit<Toast, 'id' | 'message'>>) => void;
+  dismissAll: () => void;
 }
 
 const ToastCtx = createContext<ToastContextShape | null>(null);
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+type HoverMode = 'extend' | 'pause' | 'none';
+
+interface ToastProviderProps { children: React.ReactNode; maxVisible?: number; hoverMode?: HoverMode; }
+
+export function ToastProvider({ children, maxVisible = 4, hoverMode = 'extend' }: ToastProviderProps) {
   interface ActiveToast extends Toast { createdAt: number; total: number; remaining: number; paused: boolean; count: number; }
   const [toasts, setToasts] = useState<ActiveToast[]>([]);
   const [queue, setQueue] = useState<ActiveToast[]>([]);
   const [exiting, setExiting] = useState<Record<string, boolean>>({});
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
-  const MAX_VISIBLE = 4;
+  const MAX_VISIBLE = maxVisible;
 
   const removeNow = useCallback((id: string) => {
     setToasts(t => t.filter(x => x.id !== id));
@@ -57,7 +62,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       }
       return [...current, active];
     });
-  }, []);
+  }, [MAX_VISIBLE]);
 
   // Promote queued toasts when space frees up
   useEffect(() => {
@@ -70,7 +75,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         return [...t, ...promote];
       });
     }
-  }, [toasts.length, queue]);
+  }, [toasts.length, queue, MAX_VISIBLE]);
 
   // Interval ticker for remaining time & auto-exit (dynamic extension supported)
   useEffect(() => {
@@ -108,6 +113,31 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const pauseToast = useCallback((id: string) => {
+    if (hoverMode !== 'pause') return;
+    setToasts(ts => ts.map(t => {
+      if (t.id !== id || t.paused) return t;
+      const elapsed = Date.now() - t.createdAt;
+      const remaining = Math.max(t.total - elapsed, 0);
+      return { ...t, remaining, paused: true };
+    }));
+  }, [hoverMode]);
+
+  const resumeToast = useCallback((id: string) => {
+    if (hoverMode !== 'pause') return;
+    setToasts(ts => ts.map(t => {
+      if (t.id !== id || !t.paused) return t;
+      const newCreatedAt = Date.now() - (t.total - t.remaining);
+      return { ...t, createdAt: newCreatedAt, paused: false };
+    }));
+  }, [hoverMode]);
+
+  const dismissAll = useCallback(() => {
+    setExiting(toasts.reduce((acc, t) => ({ ...acc, [t.id]: true }), {}));
+    setTimeout(() => setToasts([]), 260);
+    setQueue([]);
+  }, [toasts]);
+
   // Keyboard navigation for focus & deletion
   const handleKey = useCallback((e: React.KeyboardEvent) => {
     if (!toasts.length) return;
@@ -119,7 +149,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, [toasts, focusIndex, beginExit]);
 
   return (
-    <ToastCtx.Provider value={{ push }}>
+    <ToastCtx.Provider value={{ push, dismissAll }}>
       {children}
       <div aria-live="polite" aria-atomic="false" className="fixed bottom-4 right-4 space-y-2 z-50 max-w-sm outline-none" tabIndex={0} onKeyDown={handleKey}>
         {toasts.map((t, idx) => {
@@ -129,7 +159,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           return (
             <output
               key={t.id}
-              onMouseEnter={() => extendToast(t.id)}
+              onMouseEnter={() => { if (hoverMode === 'extend') extendToast(t.id); else if (hoverMode === 'pause') pauseToast(t.id); }}
+              onMouseLeave={() => { if (hoverMode === 'pause') resumeToast(t.id); }}
               className={`group rounded-xl px-4 py-3 text-sm shadow-lg bg-camo border border-camo-light flex items-start gap-3 leading-snug transition-all duration-200 ease-out will-change-transform relative overflow-hidden ${t.type === 'error' ? 'text-red-300' : t.type === 'success' ? 'text-green-300' : 'text-sky/90'} ${isExiting ? 'opacity-0 translate-y-2 scale-[0.97]' : 'opacity-100 translate-y-0 scale-100'} ${t.paused ? 'ring-1 ring-camo-light/60' : ''} ${focusIndex === idx ? 'outline outline-1 outline-brass' : ''}`}
               style={{ transitionDelay: isExiting ? '0ms' : `${delay}ms` }}
               tabIndex={focusIndex === idx ? 0 : -1}
@@ -166,6 +197,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </output>
           );
         })}
+        {(queue.length > 0) && (
+          <div className="flex gap-2 pt-1 items-center">
+            <button onClick={dismissAll} className="text-xs underline text-sky/80 hover:text-sky">Dismiss All</button>
+            <span className="text-xs text-sky/60">Queued: {queue.length}</span>
+          </div>
+        )}
       </div>
     </ToastCtx.Provider>
   );
