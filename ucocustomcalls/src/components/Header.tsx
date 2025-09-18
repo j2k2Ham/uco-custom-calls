@@ -1,6 +1,8 @@
 "use client";
 
 import { Logo } from "./Logo";
+import { SearchOverlay } from './SearchOverlay';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { ThemeToggle } from "./ThemeToggle";
 import { ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { ProfileMenu } from './ProfileMenu';
@@ -14,6 +16,7 @@ import { NavStorageKey, getStored, setStored } from '@/lib/navStorage';
 
 export function Header() {
   const { open, setOpen, count } = useCart();
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [shopOpen, setShopOpen] = React.useState(false);
   const [huntingOpen, setHuntingOpen] = React.useState(false);
@@ -45,6 +48,14 @@ export function Header() {
             <Nav />
           </div>
           <ThemeToggle className="mr-2" />
+          <button
+            type="button"
+            aria-label="Search store"
+            onClick={() => setSearchOpen(true)}
+            className="p-2 rounded-md hover:bg-camo-light"
+          >
+            <MagnifyingGlassIcon className="h-6 w-6" />
+          </button>
           <ProfileMenu />
           <button
             aria-label="Open cart"
@@ -104,7 +115,8 @@ export function Header() {
           </div>
         )}
       </header>
-      <CartDrawer open={open} onClose={() => setOpen(false)} />
+  <CartDrawer open={open} onClose={() => setOpen(false)} />
+  <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
