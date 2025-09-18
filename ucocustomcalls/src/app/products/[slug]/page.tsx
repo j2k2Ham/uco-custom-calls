@@ -69,6 +69,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             sellerName: 'UCO Custom Calls',
             category: product.category,
             priceValidUntil: new Date(Date.now() + 1000*60*60*24*90).toISOString().split('T')[0]
+            , mpn: product.mpn,
+            reviews: product.reviews?.map(r => ({ author: r.author, rating: r.rating, body: r.body, date: r.date }))
           }))
         }}
       />

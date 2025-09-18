@@ -29,6 +29,9 @@ export interface Product {
   ratingCount?: number; // optional number of ratings
   ratingValue?: number; // average rating value (e.g. 4.8)
   ratingBest?: number;  // best possible rating (default 5)
+  mpn?: string;         // manufacturer part number
+  gtin13?: string;      // global trade item number (13 digit)
+  reviews?: { author: string; rating: number; body?: string; date?: string }[]; // optional user reviews
 }
 
 // Presentation helper to format product price (lazy import of currency util avoided here for tree-shaking control)

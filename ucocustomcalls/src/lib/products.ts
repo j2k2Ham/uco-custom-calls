@@ -19,7 +19,12 @@ export const PRODUCTS: Product[] = [
     audio: [{ src: "/audio/pintail-openwater.mp3", label: "Open Water Demo" }],
     inStock: true,
     ratingValue: 4.8,
-    ratingCount: 57
+    ratingCount: 57,
+    mpn: "duck-pt-whiskey",
+    reviews: [
+      { author: 'Alex', rating: 5, body: 'Bright top end and easy feed — my go-to.' },
+      { author: 'Jess', rating: 5, body: 'Great control in variable wind.' }
+    ]
   },
   {
     id: "gear-camo-hat",
@@ -35,7 +40,8 @@ export const PRODUCTS: Product[] = [
     features: ["Breathable panels", "Embroidered logo", "Lightweight field wear"],
     inStock: true,
     ratingValue: 4.9,
-    ratingCount: 12
+    ratingCount: 12,
+    mpn: "gear-camo-hat"
   },
   {
     id: "goose-canada-ocean",
@@ -53,7 +59,8 @@ export const PRODUCTS: Product[] = [
     audio: [{ src: "/audio/canada-honk.mp3", label: "Canada Honk" }],
     inStock: true,
     ratingValue: 4.6,
-    ratingCount: 34
+    ratingCount: 34,
+    mpn: "goose-canada-ocean"
   },
   {
     id: "lanyard-brass",
@@ -66,7 +73,8 @@ export const PRODUCTS: Product[] = [
   images: [{ src: "/images/obla2.jpg", alt: "Paracord Lanyard", primary: true }],
     badges: ["Paracord", "Handmade"],
     features: ["Cold weather tested", "Multiple call drops", "Brass accent"],
-    inStock: true
+    inStock: true,
+    mpn: "lanyard-brass"
   }
 ];
 

@@ -22,6 +22,13 @@ describe('Product detail page', () => {
     const text = productScript?.textContent || '';
     expect(text).toContain('"brand"');
     expect(text).toContain('"seller"');
+    // Extended SEO fields
+    expect(text).toMatch(/"mpn"/);
+    // Review array presence (if any sample product has reviews)
+    if (sample.reviews && sample.reviews.length) {
+      expect(text).toMatch(/"review"/);
+      expect(text).toMatch(/"ratingValue"/);
+    }
   });
 
   it('generates metadata', async () => {

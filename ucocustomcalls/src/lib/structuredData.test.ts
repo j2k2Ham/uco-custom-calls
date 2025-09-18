@@ -27,7 +27,12 @@ describe('productJsonLD', () => {
       brandName: 'BrandX',
       sellerName: 'BrandX',
       priceValidUntil: '2030-01-01',
-      category: 'duck'
+      category: 'duck',
+      mpn: 'MPN-123',
+      reviews: [
+        { author: 'Alice', rating: 5, body: 'Great!', date: '2025-01-01' },
+        { author: 'Bob', rating: 4, body: 'Good', date: '2025-02-01' }
+      ]
     });
     expect(json['@type']).toBe('Product');
     expect(json.offers.price).toBe('12.34');
@@ -38,6 +43,12 @@ describe('productJsonLD', () => {
     expect(json.offers.priceValidUntil).toBe('2030-01-01');
     expect(json.aggregateRating?.ratingValue).toBe(4.5);
     expect(json.aggregateRating?.reviewCount).toBe(10);
+    interface ExtendedJson { mpn: string; review: { author: { name: string } }[] }
+    const extended = json as unknown as ExtendedJson;
+    expect(extended.mpn).toBe('MPN-123');
+    expect(Array.isArray(extended.review)).toBe(true);
+    expect(extended.review.length).toBe(2);
+    expect(extended.review[0].author.name).toBe('Alice');
   });
 
   it('omits aggregateRating when missing data', () => {

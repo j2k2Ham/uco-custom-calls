@@ -69,6 +69,30 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   suppressHydrationWarning
                   dangerouslySetInnerHTML={{ __html: JSON.stringify({
                     '@context': 'https://schema.org',
+                    '@type': 'WebSite',
+                    name: 'UCO Custom Calls',
+                    url: 'https://ucocustomcalls.com/',
+                    potentialAction: {
+                      '@type': 'SearchAction',
+                      target: 'https://ucocustomcalls.com/search?q={search_term_string}',
+                      'query-input': 'required name=search_term_string'
+                    }
+                  }) }}
+                />
+                <script
+                  type="application/ld+json"
+                  suppressHydrationWarning
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                    '@context': 'https://schema.org',
+                    '@type': 'ImageObject',
+                    url: 'https://ucocustomcalls.com/images/company-logo-green-2x.png'
+                  }) }}
+                />
+                <script
+                  type="application/ld+json"
+                  suppressHydrationWarning
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                    '@context': 'https://schema.org',
                     '@type': 'SiteNavigationElement',
                     name: ['Home','Products','Duck Calls','Goose Calls','Paracord Lanyards','Gear','Sound Files','Custom Calls','About','Contact'],
                     url: [

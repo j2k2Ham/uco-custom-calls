@@ -68,6 +68,9 @@ export function productJsonLD(p: {
   brandName?: string;
   category?: string;
   sellerName?: string;
+  mpn?: string;
+  gtin13?: string;
+  reviews?: { author: string; rating: number; body?: string; date?: string }[];
 }) {
   const price = (p.priceCents / 100).toFixed(2);
   const currency = p.currency || 'USD';
@@ -91,6 +94,8 @@ export function productJsonLD(p: {
     offers: offer
   };
   if (p.sku) data.sku = p.sku;
+  if (p.mpn) (data as any).mpn = p.mpn;
+  if (p.gtin13) (data as any).gtin13 = p.gtin13;
   if (p.brandName) data.brand = { '@type': 'Brand', name: p.brandName };
   if (p.category) data.category = p.category;
   if (p.ratingValue && p.ratingCount) {
@@ -100,6 +105,15 @@ export function productJsonLD(p: {
       reviewCount: p.ratingCount,
       bestRating: p.ratingBest || 5
     };
+  }
+  if (p.reviews && p.reviews.length) {
+    (data as any).review = p.reviews.map(r => ({
+      '@type': 'Review',
+      reviewBody: r.body,
+      datePublished: r.date,
+      author: { '@type': 'Person', name: r.author },
+      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 }
+    }));
   }
   return data;
 }
